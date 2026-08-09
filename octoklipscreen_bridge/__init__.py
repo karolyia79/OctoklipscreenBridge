@@ -4,8 +4,6 @@ OctoklipscreenBridge - OctoPrint plugin
 Sends serial logs via MQTT to CYD display
 """
 
-__plugin_python_version__ = ">=3,<4"
-
 import logging
 import threading
 import os
@@ -185,8 +183,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         if self._settings.get_boolean(["mqtt_enabled"]):
             self._send_mqtt_message("serial", line.strip())
 
-    @staticmethod
-    def get_update_information():
+    def get_update_information(self):
         """Return update information"""
         return dict(
             octoklipscreen_bridge=dict(
@@ -205,11 +202,15 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             )
         )
 
+# A példakód alapján módosított globális rész
+__plugin_name__ = "Octoklipscreen Bridge"
+__plugin_pythoncompat__ = ">=3,<4" # A hivatalos plugin ezt a változónevet használja
 
 def __plugin_load__():
-    """Load the plugin"""
+    plugin = OctoklipscreenBridgePlugin()
+
     global __plugin_implementation__
-    __plugin_implementation__ = OctoklipscreenBridgePlugin()
+    __plugin_implementation__ = plugin
 
     global __plugin_hooks__
     __plugin_hooks__ = {
