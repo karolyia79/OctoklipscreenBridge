@@ -186,11 +186,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.5.1",
+                  displayVersion="0.5.2",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.5.1",
+                  current="0.5.2",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
