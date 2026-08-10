@@ -1,63 +1,65 @@
-<div class="control-group">
-    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-enabled">
-        <input type="checkbox" id="settings-octoklipscreen_bridge-mqtt-enabled" data-bind="checked: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-        Enable MQTT Bridge
-    </label>
-    <div class="controls">
-        <span class="help-block">Enable sending serial logs to MQTT broker</span>
+<form class="form-horizontal" id="settings_plugin_octoklipscreen_bridge">
+    <div class="control-group">
+        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-enabled">
+            <input type="checkbox" id="settings-octoklipscreen_bridge-mqtt-enabled" data-bind="checked: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+            Enable MQTT Bridge
+        </label>
+        <div class="controls">
+            <span class="help-block">Enable sending serial logs to MQTT broker</span>
+        </div>
     </div>
-</div>
 
-<div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
-    <div class="controls">
-        <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
-        <span class="help-block">IP address or hostname of your MQTT broker</span>
+    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
+        <div class="controls">
+            <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
+            <span class="help-block">IP address or hostname of your MQTT broker</span>
+        </div>
     </div>
-</div>
 
-<div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
-    <div class="controls">
-        <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
-        <span class="help-block">MQTT broker port (default: 1883)</span>
+    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
+        <div class="controls">
+            <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
+            <span class="help-block">MQTT broker port (default: 1883)</span>
+        </div>
     </div>
-</div>
 
-<div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
-    <div class="controls">
-        <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
-        <span class="help-block">Leave empty if authentication is not required</span>
+    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
+        <div class="controls">
+            <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
+            <span class="help-block">Leave empty if authentication is not required</span>
+        </div>
     </div>
-</div>
 
-<div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
-    <div class="controls">
-        <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
-        <span class="help-block">Leave empty if authentication is not required</span>
+    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
+        <div class="controls">
+            <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
+            <span class="help-block">Leave empty if authentication is not required</span>
+        </div>
     </div>
-</div>
 
-<div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
-    <div class="controls">
-        <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
-        <span class="help-block">Base MQTT topic for messages</span>
+    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
+        <div class="controls">
+            <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
+            <span class="help-block">Base MQTT topic for messages</span>
+        </div>
     </div>
-</div>
 
-<div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-    <label class="control-label" for="settings-octoklipscreen_bridge-log-serial">
-        <input type="checkbox" id="settings-octoklipscreen_bridge-log-serial" data-bind="checked: settings.plugins.octoklipscreen_bridge.log_serial">
-        Log Serial Communication
-    </label>
-    <div class="controls">
-        <span class="help-block">Enable serial.log in OctoPrint Settings → Features for better tracking</span>
+    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+        <label class="control-label" for="settings-octoklipscreen_bridge-log-serial">
+            <input type="checkbox" id="settings-octoklipscreen_bridge-log-serial" data-bind="checked: settings.plugins.octoklipscreen_bridge.log_serial">
+            Log Serial Communication
+        </label>
+        <div class="controls">
+            <span class="help-block">Enable serial.log in OctoPrint Settings → Features for better tracking</span>
+        </div>
     </div>
-</div>
 
-<div class="alert alert-info">
-    <strong>Important:</strong> Make sure serial logging is enabled in OctoPrint Settings → Features → Serial Logging
-</div>
+    <div class="alert alert-info">
+        <strong>Important:</strong> Make sure serial logging is enabled in OctoPrint Settings → Features → Serial Logging
+    </div>
+</form>
