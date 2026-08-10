@@ -205,7 +205,6 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             )
         )
 
-
 __plugin_name__ = "Octoklipscreen Bridge"
 __plugin_pythoncompat__ = ">=3,<4"
 
@@ -217,7 +216,6 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.process_gcode_sent,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.process_gcode_received
     }
