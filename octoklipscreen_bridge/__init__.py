@@ -100,9 +100,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
                 logger.warning("MQTT host not configured")
                 return
 
-            self.mqtt_client = mqtt.Client(
-                client_id=f"octoprint_{os.environ.get('HOSTNAME', 'octoprint')}"
-            )
+            # Kompatibilis inicializálás a paho-mqtt verziókhoz
+            try:
+                self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id=f"octoprint_{os.environ.get('HOSTNAME', 'octoprint')}")
+            except AttributeError:
+                self.mqtt_client = mqtt.Client(client_id=f"octoprint_{os.environ.get('HOSTNAME', 'octoprint')}")
             
             # Set callbacks
             self.mqtt_client.on_connect = self._on_mqtt_connect
@@ -189,7 +191,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         return dict(
             octoklipscreen_bridge=dict(
                 displayName="Octoklipscreen Bridge",
-                displayVersion="0.4.4",
+                displayVersion="0.4.5",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
@@ -204,9 +206,9 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             )
         )
 
-# A példakód alapján módosított globális rész
+
 __plugin_name__ = "Octoklipscreen Bridge"
-__plugin_pythoncompat__ = ">=3,<4" # A hivatalos plugin ezt a változónevet használja
+__plugin_pythoncompat__ = ">=3,<4"
 
 def __plugin_load__():
     plugin = OctoklipscreenBridgePlugin()
