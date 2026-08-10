@@ -89,7 +89,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             self._send_mqtt_message("status", f"Print failed: {reason}")
 
     def _connect_mqtt(self):
-        """Connect to MQTT broker"""
+        """Connect to MQTT broker safely without blocking startup"""
         try:
             host = self._settings.get(["mqtt_host"])
             port = self._settings.get_int(["mqtt_port"])
@@ -113,14 +113,15 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             if username and password:
                 self.mqtt_client.username_pw_set(username, password)
 
-            # Connect
-            logger.info(f"Connecting to MQTT broker at {host}:{port}")
-            self.mqtt_client.connect(host, port, keepalive=60)
+            # Connect non-blocking / safely wrapped
+            logger.info(f"Attempting to connect to MQTT broker at {host}:{port}")
+            self.mqtt_client.connect_async(host, port, keepalive=60)
             self.mqtt_client.loop_start()
 
         except Exception as e:
-            logger.error(f"Failed to connect to MQTT broker: {e}")
+            logger.warning(f"MQTT broker not reachable yet (non-fatal): {e}")
             self.mqtt_client = None
+            self._mqtt_connected = False
 
     def _disconnect_mqtt(self):
         """Disconnect from MQTT broker"""
@@ -187,18 +188,19 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         """Return update information"""
         return dict(
             octoklipscreen_bridge=dict(
-                displayName="OctoklipscreenBridge",
-                displayVersion="0.4.3",
+                displayName="Octoklipscreen Bridge",
+                displayVersion="0.4.4",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.4.3",
+                current="0.4.4",
                 stable_branch=dict(
-                    name="Stable",
+                    name="Main",
                     branch="main",
                     comittish=["main"]
                 ),
-                prerelease_branches=[]
+                prerelease_branches=[],
+                pip="https://github.com/karolyia79/OctoklipscreenBridge/archive/refs/heads/main.zip"
             )
         )
 
