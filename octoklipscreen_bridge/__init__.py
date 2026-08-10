@@ -182,6 +182,25 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         if self._settings.get_boolean(["mqtt_enabled"]):
             self._send_mqtt_message("serial", line.strip())
 
+    def get_update_information(self):
+          """Return update information"""
+          return dict(
+              octoklipscreen_bridge=dict(
+                  displayName="Octoklipscreen Bridge",
+                  displayVersion="0.4.7",
+                  type="github_release",
+                  user="karolyia79",
+                  repo="OctoklipscreenBridge",
+                  current="0.4.7",
+                  stable_branch=dict(
+                      name="Main",
+                      branch="main",
+                      comittish=["main"]
+                  ),
+                  prerelease_branches=[],
+                  pip="https://github.com/karolyia79/OctoklipscreenBridge/archive/refs/heads/main.zip"
+              )
+          )
 
 __plugin_name__ = "Octoklipscreen Bridge"
 __plugin_pythoncompat__ = ">=3,<4"
