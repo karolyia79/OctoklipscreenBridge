@@ -49,10 +49,9 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         }
 
     def get_template_configs(self):
-        """Return template configurations"""
-        return [
-            dict(type="settings", custom_bindings=False)
-        ]
+    return [
+        dict(type="settings", custom_bindings=False, name="Octoklipscreen Bridge")
+    ]
       
     def process_gcode_sent(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """Elkapja a nyomtatónak küldött parancsokat"""
