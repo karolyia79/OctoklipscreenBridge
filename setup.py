@@ -14,7 +14,7 @@ plugin_package = "octoklipscreen_bridge"
 plugin_name = "Octoklipscreen Bridge"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.4.3"
+plugin_version = "0.4.4"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
@@ -24,7 +24,7 @@ plugin_description = "Bridge to send serial logs via MQTT to CYD display"
 plugin_author = "Károlyi András"
 
 # The plugin's author's mail address.
-plugin_author_email = ""
+plugin_author_email = "andraskarolyi@hotmail.com"
 
 # The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
 plugin_url = "https://github.com/karolyia79/OctoklipscreenBridge"
