@@ -195,7 +195,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.4.4",
+                current="0.4.5",
                 stable_branch=dict(
                     name="Main",
                     branch="main",
