@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
                                 octoprint.plugin.SettingsPlugin,
-                                octoprint.plugin.EventHandlerPlugin):
+                                octoprint.plugin.EventHandlerPlugin),
+                                octoprint.plugin.TemplatePlugin):
     """
     OctoPrint plugin for bridging serial logs to MQTT
     """
@@ -185,11 +186,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.5.0",
+                  displayVersion="0.5.1",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.5.0",
+                  current="0.5.1",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
@@ -201,6 +202,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           )
 
 __plugin_name__ = "Octoklipscreen Bridge"
+__plugin_identifier__ = "octoklipscreen_bridge"
 __plugin_pythoncompat__ = ">=3,<4"
 
 def __plugin_load__():
