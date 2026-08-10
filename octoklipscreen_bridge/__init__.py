@@ -49,9 +49,10 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         }
 
     def get_template_configs(self):
-    return [
-        dict(type="settings", custom_bindings=False, name="Octoklipscreen Bridge")
-    ]
+        """Return template configurations"""
+        return [
+            dict(type="settings", custom_bindings=False, name="Octoklipscreen Bridge")
+        ]
       
     def process_gcode_sent(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
         """Elkapja a nyomtatónak küldött parancsokat"""
@@ -99,22 +100,18 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
                 logger.warning("MQTT host not configured")
                 return
 
-            # Kompatibilis inicializálás a paho-mqtt verziókhoz
             try:
                 self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id=f"octoprint_{os.environ.get('HOSTNAME', 'octoprint')}")
             except AttributeError:
                 self.mqtt_client = mqtt.Client(client_id=f"octoprint_{os.environ.get('HOSTNAME', 'octoprint')}")
             
-            # Set callbacks
             self.mqtt_client.on_connect = self._on_mqtt_connect
             self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
             self.mqtt_client.on_publish = self._on_mqtt_publish
 
-            # Set credentials if provided
             if username and password:
                 self.mqtt_client.username_pw_set(username, password)
 
-            # Connect non-blocking / safely wrapped
             logger.info(f"Attempting to connect to MQTT broker at {host}:{port}")
             self.mqtt_client.connect_async(host, port, keepalive=60)
             self.mqtt_client.loop_start()
@@ -156,7 +153,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
 
     def _on_mqtt_publish(self, client, userdata, mid):
         """MQTT publish callback"""
-        pass  # Optional: log publishing events
+        pass
 
     def _send_mqtt_message(self, topic_suffix, message):
         """Send message to MQTT broker"""
@@ -185,25 +182,6 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         if self._settings.get_boolean(["mqtt_enabled"]):
             self._send_mqtt_message("serial", line.strip())
 
-    def get_update_information(self):
-        """Return update information"""
-        return dict(
-            octoklipscreen_bridge=dict(
-                displayName="Octoklipscreen Bridge",
-                displayVersion="0.4.5",
-                type="github_release",
-                user="karolyia79",
-                repo="OctoklipscreenBridge",
-                current="0.4.5",
-                stable_branch=dict(
-                    name="Main",
-                    branch="main",
-                    comittish=["main"]
-                ),
-                prerelease_branches=[],
-                pip="https://github.com/karolyia79/OctoklipscreenBridge/archive/refs/heads/main.zip"
-            )
-        )
 
 __plugin_name__ = "Octoklipscreen Bridge"
 __plugin_pythoncompat__ = ">=3,<4"
