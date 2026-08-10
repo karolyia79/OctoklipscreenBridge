@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
                                 octoprint.plugin.SettingsPlugin,
-                                octoprint.plugin.EventHandlerPlugin),
+                                octoprint.plugin.EventHandlerPlugin,
                                 octoprint.plugin.TemplatePlugin):
     """
     OctoPrint plugin for bridging serial logs to MQTT
