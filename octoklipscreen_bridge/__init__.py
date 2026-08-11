@@ -107,6 +107,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             self.mqtt_client.on_connect = self._on_mqtt_connect
             self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
             self.mqtt_client.on_publish = self._on_mqtt_publish
+            self.mqtt_client.on_message = self._on_mqtt_message
 
             if username and password:
                 self.mqtt_client.username_pw_set(username, password)
@@ -138,6 +139,9 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             logger.info("Connected to MQTT broker")
             self._mqtt_connected = True
             self._send_mqtt_message("status", "OctoklipscreenBridge connected")
+            base_topic = self._settings.get(["mqtt_topic"])
+            client.subscribe(f"{base_topic}/command", qos=1)
+            logger.info(f"Subscribed to {base_topic}/command")
         else:
             logger.error(f"MQTT connection failed with code {rc}")
             self._mqtt_connected = False
@@ -153,6 +157,16 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
     def _on_mqtt_publish(self, client, userdata, mid):
         """MQTT publish callback"""
         pass
+
+    def _on_mqtt_message(self, client, userdata, msg):
+        """MQTT message callback for incoming commands"""
+        try:
+            command = msg.payload.decode("utf-8").strip()
+            logger.info(f"Received MQTT command: {command}")
+            if command and hasattr(self, "_printer"):
+                self._printer.command(command)
+        except Exception as e:
+            logger.error(f"Error handling incoming MQTT message: {e}")
 
     def _send_mqtt_message(self, topic_suffix, message):
         """Send message to MQTT broker"""
