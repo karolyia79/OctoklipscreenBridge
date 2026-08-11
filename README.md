@@ -7,7 +7,7 @@ An OctoPrint plugin designed to bridge serial logs and printer status events via
 * **Serial Communication Bridge**: Captures G-code sent (`Send:`) and received (`Recv:`) by the printer and publishes them to an MQTT topic in real time.
 * **Status Events**: Automatically publishes printer status updates (e.g., Print Started, Print Completed, Print Failed) to MQTT.
 * **OctoPrint Settings Integration**: Fully manageable through a dedicated configuration panel in the OctoPrint Settings menu.
-
+* **After v0.6.x**: Direct command sending to the octoprint terminal is available!
 ## Requirements
 
 * OctoPrint (v1.11.0 or newer)
