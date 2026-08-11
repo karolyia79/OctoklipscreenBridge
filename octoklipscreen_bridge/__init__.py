@@ -164,7 +164,8 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             command = msg.payload.decode("utf-8").strip()
             logger.info(f"Received MQTT command: {command}")
             if command and hasattr(self, "_printer"):
-                self._printer.command(command)
+                # ITT A JAVÍTÁS: command helyett commands (többes szám)
+                self._printer.commands(command)
         except Exception as e:
             logger.error(f"Error handling incoming MQTT message: {e}")
 
