@@ -78,14 +78,26 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         self._disconnect_mqtt()
 
     def on_event(self, event, payload):
-        """Handle OctoPrint events"""
-        if event == "PrintStarted":
-            self._send_mqtt_message("status", "Print started: " + payload.get("name", "Unknown"))
-        elif event == "PrintDone":
-            self._send_mqtt_message("status", "Print completed successfully")
+        """Handle OctoPrint events and printer states"""
+        if event == "PrinterStateChanged":
+            state_text = payload.get("state_string", "Operational")
+            self._send_mqtt_message("status", state_text)
+        elif event == "PrintStarted":
+            print_name = payload.get("name", "Unknown")
+            self._send_mqtt_message("status", f"Printing: {print_name}")
+        elif event == "PrintPaused":
+            self._send_mqtt_message("status", "Paused")
+        elif event == "PrintResumed":
+            self._send_mqtt_message("status", "Printing")
+        elif event == "PrintDone" or event == "PrintCancelled":
+            self._send_mqtt_message("status", "Operational")
         elif event == "PrintFailed":
             reason = payload.get("reason", "Unknown reason")
-            self._send_mqtt_message("status", f"Print failed: {reason}")
+            self._send_mqtt_message("status", f"Failed: {reason}")
+        elif event == "Connected":
+            self._send_mqtt_message("status", "Operational")
+        elif event == "Disconnected":
+            self._send_mqtt_message("status", "Offline")
 
     def _connect_mqtt(self):
         """Connect to MQTT broker safely without blocking startup"""
@@ -138,7 +150,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         if rc == 0:
             logger.info("Connected to MQTT broker")
             self._mqtt_connected = True
-            self._send_mqtt_message("status", "OctoklipscreenBridge connected")
+            self._send_mqtt_message("status", "Operational")
             base_topic = self._settings.get(["mqtt_topic"])
             client.subscribe(f"{base_topic}/command", qos=1)
             logger.info(f"Subscribed to {base_topic}/command")
@@ -164,7 +176,6 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             command = msg.payload.decode("utf-8").strip()
             logger.info(f"Received MQTT command: {command}")
             if command and hasattr(self, "_printer"):
-                # JAVÍTVA: commands helyett a helyes egyes számú command metódus
                 self._printer.command(command)
         except Exception as e:
             logger.error(f"Error handling incoming MQTT message: {e}")
@@ -178,10 +189,13 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             base_topic = self._settings.get(["mqtt_topic"])
             full_topic = f"{base_topic}/{topic_suffix}"
             
-            result = self.mqtt_client.publish(full_topic, message, qos=1)
+            # A status topic üzenetei retained flaget kapnak, így a kijelző azonnal megkapja az utolsó állágot
+            is_retain = (topic_suffix == "status")
+            
+            result = self.mqtt_client.publish(full_topic, message, qos=1, retain=is_retain)
             
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
-                logger.debug(f"Published to {full_topic}: {message}")
+                logger.debug(f"Published to {full_topic} (retain={is_retain}): {message}")
                 return True
             else:
                 logger.error(f"Failed to publish to {full_topic}: {result.rc}")
@@ -201,11 +215,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.6.3",
+                  displayVersion="0.6.4",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.6.3",
+                  current="0.6.4",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
