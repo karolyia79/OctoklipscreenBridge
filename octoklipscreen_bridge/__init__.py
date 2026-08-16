@@ -196,11 +196,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             command = msg.payload.decode("utf-8").strip()
             logger.info(f"Received MQTT command: {command}")
             
-            # Ha a kijelző kifejezetten státuszt kér (pl. "STATUS" vagy "GET_STATUS" küldésével)
             if command.upper() in ["STATUS", "GET_STATUS"]:
                 self._send_current_status()
             elif command and hasattr(self, "_printer"):
-                self._printer.command(command)
+                # JAVÍTVA: Kizárólag a helyes többes számú commands() metódus használata!
+                self._printer.commands(command)
         except Exception as e:
             logger.error(f"Error handling incoming MQTT message: {e}")
 
@@ -237,11 +237,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.6.5",
+                  displayVersion="0.6.6",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.6.5",
+                  current="0.6.6",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
