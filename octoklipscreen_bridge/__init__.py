@@ -32,6 +32,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         self.serial_log_thread = None
         self._serial_log_file = None
         self._mqtt_connected = False
+        self._status_timer = None
         
         # Get OctoPrint base folder for serial.log location
         self._base_folder = self.get_plugin_data_folder()
@@ -72,9 +73,16 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         else:
             logger.info("MQTT is disabled in settings")
 
+        # Időzítő indítása: 15 másodpercenként automatikusan kiküldi az aktuális státuszt (heartbeat)
+        self._status_timer = RepeatedTimer(15.0, self._send_current_status)
+        self._status_timer.start()
+
     def on_shutdown(self):
         """Called when OctoPrint is shutting down"""
         logger.info("OctoklipscreenBridge plugin shutting down")
+        if self._status_timer:
+            self._status_timer.cancel()
+            self._status_timer = None
         self._disconnect_mqtt()
 
     def on_event(self, event, payload):
@@ -98,6 +106,18 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             self._send_mqtt_message("status", "Operational")
         elif event == "Disconnected":
             self._send_mqtt_message("status", "Offline")
+
+    def _send_current_status(self):
+        """Aktiv státusz lekérdezése és küldése (időzítőhöz vagy kérésre)"""
+        if not self._mqtt_connected:
+            return
+        state_text = "Operational"
+        if hasattr(self, "_printer"):
+            try:
+                state_text = self._printer.get_state_string()
+            except Exception:
+                pass
+        self._send_mqtt_message("status", state_text)
 
     def _connect_mqtt(self):
         """Connect to MQTT broker safely without blocking startup"""
@@ -150,7 +170,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         if rc == 0:
             logger.info("Connected to MQTT broker")
             self._mqtt_connected = True
-            self._send_mqtt_message("status", "Operational")
+            self._send_current_status()
             base_topic = self._settings.get(["mqtt_topic"])
             client.subscribe(f"{base_topic}/command", qos=1)
             logger.info(f"Subscribed to {base_topic}/command")
@@ -175,7 +195,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         try:
             command = msg.payload.decode("utf-8").strip()
             logger.info(f"Received MQTT command: {command}")
-            if command and hasattr(self, "_printer"):
+            
+            # Ha a kijelző kifejezetten státuszt kér (pl. "STATUS" vagy "GET_STATUS" küldésével)
+            if command.upper() in ["STATUS", "GET_STATUS"]:
+                self._send_current_status()
+            elif command and hasattr(self, "_printer"):
                 self._printer.command(command)
         except Exception as e:
             logger.error(f"Error handling incoming MQTT message: {e}")
@@ -189,9 +213,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             base_topic = self._settings.get(["mqtt_topic"])
             full_topic = f"{base_topic}/{topic_suffix}"
             
-            # A status topic üzenetei retained flaget kapnak, így a kijelző azonnal megkapja az utolsó állágot
             is_retain = (topic_suffix == "status")
-            
             result = self.mqtt_client.publish(full_topic, message, qos=1, retain=is_retain)
             
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
