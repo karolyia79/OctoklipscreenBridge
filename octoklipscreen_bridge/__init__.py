@@ -201,11 +201,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.6.1",
+                  displayVersion="0.6.2",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.6.1",
+                  current="0.6.2",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
@@ -231,3 +231,4 @@ def __plugin_load__():
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.process_gcode_sent,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.process_gcode_received
     }
+```[cite: 1]
