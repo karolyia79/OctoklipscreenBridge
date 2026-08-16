@@ -1,15 +1,5 @@
 <form class="form-horizontal" id="settings_plugin_octoklipscreen_bridge">
     <div class="control-group">
-        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-enabled">
-            <input type="checkbox" id="settings-octoklipscreen_bridge-mqtt-enabled" data-bind="checked: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-            Enable MQTT Bridge
-        </label>
-        <div class="controls">
-            <span class="help-block">Enable sending serial logs to MQTT broker</span>
-        </div>
-    </div>
-
-    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
         <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
         <div class="controls">
             <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
@@ -17,7 +7,7 @@
         </div>
     </div>
 
-    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+    <div class="control-group">
         <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
         <div class="controls">
             <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
@@ -25,7 +15,7 @@
         </div>
     </div>
 
-    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+    <div class="control-group">
         <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
         <div class="controls">
             <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
@@ -33,7 +23,7 @@
         </div>
     </div>
 
-    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+    <div class="control-group">
         <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
         <div class="controls">
             <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
@@ -41,25 +31,27 @@
         </div>
     </div>
 
-    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
+    <div class="control-group">
         <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
         <div class="controls">
             <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
-            <span class="help-block">Base MQTT topic for messages</span>
+            <span class="help-block" style="color: #b94a48; font-weight: bold;">DO NOT CHANGE! This topic structure is strictly required for the CYD display firmware compatibility.</span>
         </div>
     </div>
 
-    <div class="control-group" data-bind="visible: settings.plugins.octoklipscreen_bridge.mqtt_enabled">
-        <label class="control-label" for="settings-octoklipscreen_bridge-log-serial">
-            <input type="checkbox" id="settings-octoklipscreen_bridge-log-serial" data-bind="checked: settings.plugins.octoklipscreen_bridge.log_serial">
-            Log Serial Communication
-        </label>
-        <div class="controls">
-            <span class="help-block">Enable serial.log in OctoPrint Settings → Features for better tracking</span>
-        </div>
+    <div class="alert alert-error" style="background-color: #f2dede; border-color: #ebccd1; color: #a94442;">
+        <strong>IMPORTANT (Maximum Stability):</strong><br>
+        For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (`localhost`)!
     </div>
 
     <div class="alert alert-info">
-        <strong>Important:</strong> Make sure serial logging is enabled in OctoPrint Settings → Features → Serial Logging
+        <strong>Octoklipscreen Bridge Overview:</strong><br>
+        This plugin bridges your OctoPrint server with the CYD (Cheap Yellow Display) touchscreen firmware, enabling real-time status monitoring and G-code control via MQTT.<br><br>
+        <strong>Active MQTT Topics:</strong>
+        <ul style="margin-bottom: 0; margin-top: 5px;">
+            <li><code>{base_topic}/serial</code> – Real-time G-code communication logs (Send / Recv).</li>
+            <li><code>{base_topic}/status</code> – Printer and connection status updates (Operational, Printing, Paused, etc.) with retained messages. Automatically refreshed every 15 seconds (heartbeat) or instantly upon receiving a <code>STATUS</code> command.</li>
+            <li><code>{base_topic}/command</code> – Incoming control commands, G-code execution, and status request queries (send <code>STATUS</code> or <code>GET_STATUS</code> to force immediate update).</li>
+        </ul>
     </div>
 </form>
