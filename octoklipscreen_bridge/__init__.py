@@ -164,8 +164,8 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             command = msg.payload.decode("utf-8").strip()
             logger.info(f"Received MQTT command: {command}")
             if command and hasattr(self, "_printer"):
-                # ITT A JAVÍTÁS: command helyett commands (többes szám)
-                self._printer.commands(command)
+                # JAVÍTVA: commands helyett a helyes egyes számú command metódus
+                self._printer.command(command)
         except Exception as e:
             logger.error(f"Error handling incoming MQTT message: {e}")
 
@@ -201,11 +201,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.6.2",
+                  displayVersion="0.6.3",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.6.2",
+                  current="0.6.3",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
@@ -231,4 +231,3 @@ def __plugin_load__():
         "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.process_gcode_sent,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.process_gcode_received
     }
-```[cite: 1]
