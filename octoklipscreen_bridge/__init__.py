@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 OctoklipscreenBridge - OctoPrint plugin
-Sends serial logs and job data via MQTT to CYD display
+Sends serial logs, status, printer profile and job data via MQTT to CYD display
 """
 
 import logging
@@ -24,7 +24,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
                                 octoprint.plugin.EventHandlerPlugin,
                                 octoprint.plugin.TemplatePlugin):
     """
-    OctoPrint plugin for bridging serial logs and job info to MQTT
+    OctoPrint plugin for bridging serial logs and printer info to MQTT
     """
 
     def initialize(self):
@@ -136,18 +136,24 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         self._send_mqtt_message("status", state_text)
 
     def _send_current_printer_profile(self):
-        """Aktív nyomtatóprofil nevének lekérdezése és küldése a /printer topicra"""
+        """Aktív nyomtatóprofil lekérdezése és küldése a /printer topicra JSON-ként"""
         if not self._mqtt_connected:
             return
-        profile_name = "Unknown"
+        profile_data = {}
         if hasattr(self, "_printer"):
             try:
                 profile = self._printer.get_current_printer_profile()
-                if profile and "name" in profile:
-                    profile_name = profile["name"]
+                if profile:
+                    profile_data = profile
             except Exception as e:
                 logger.error(f"Error fetching printer profile: {e}")
-        self._send_mqtt_message("printer", profile_name)
+        
+        try:
+            message = json.dumps(profile_data)
+        except Exception:
+            message = "{}"
+            
+        self._send_mqtt_message("printer", message)
 
     def _send_current_job(self):
         """Aktuális job, haladás és fájl adatok lekérdezése és küldése a /job topicra JSON-ként"""
@@ -260,7 +266,6 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             base_topic = self._settings.get(["mqtt_topic"])
             full_topic = f"{base_topic}/{topic_suffix}"
             
-            # A status, printer és job topicok retained flaget kapnak
             is_retain = topic_suffix in ["status", "printer", "job"]
             result = self.mqtt_client.publish(full_topic, message, qos=1, retain=is_retain)
             
@@ -285,11 +290,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.7.1",
+                  displayVersion="0.7.2",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.7.1",
+                  current="0.7.2",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
