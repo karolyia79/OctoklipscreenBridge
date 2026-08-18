@@ -74,8 +74,8 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         else:
             logger.info("MQTT is disabled in settings")
 
-        # Időzítő indítása: 15 másodpercenként automatikusan kiküldi a státuszt, nyomtató adatokat és a job adatokat (profil nélkül!)
-        self._status_timer = RepeatedTimer(15.0, self._send_periodic_updates)
+        # Időzítő indítása: 1 másodpercenként automatikusan kiküldi a státuszt, nyomtató adatokat és a job adatokat
+        self._status_timer = RepeatedTimer(1.0, self._send_periodic_updates)
         self._status_timer.start()
 
     def on_shutdown(self):
@@ -114,12 +114,12 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             self._send_mqtt_message("status", "Operational")
             self._send_current_printer_info()
             self._send_current_job()
-            self._send_printer_profile()  # Profil elküldése csatlakozáskor
+            self._send_printer_profile()
         elif event == "Disconnected":
             self._send_mqtt_message("status", "Offline")
 
     def _send_periodic_updates(self):
-        """Időzített rutin a státusz, nyomtató adatok és job adatok küldésére (15mp-ként, profil nélkül)"""
+        """Időzített rutin a státusz, nyomtató adatok és job adatok küldésére (1mp-ként)"""
         self._send_current_status()
         self._send_current_printer_info()
         self._send_current_job()
@@ -272,7 +272,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             logger.info("Connected to MQTT broker")
             self._mqtt_connected = True
             self._send_periodic_updates()
-            self._send_printer_profile()  # Profil elküldése kapcsolódáskor
+            self._send_printer_profile()
             base_topic = self._settings.get(["mqtt_topic"])
             client.subscribe(f"{base_topic}/command", qos=1)
             logger.info(f"Subscribed to {base_topic}/command")
@@ -298,9 +298,8 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             command = msg.payload.decode("utf-8").strip()
             logger.info(f"Received MQTT command: {command}")
             
-            if command.upper() in ["STATUS", "GET_STATUS"]:
-                self._send_periodic_updates()
-            elif command.upper() in ["PROFILE", "GET_PROFILE"]:
+            # STATUS/GET_STATUS parancsok kezelése eltávolítva
+            if command.upper() in ["PROFILE", "GET_PROFILE"]:
                 self._send_printer_profile()
             elif command and hasattr(self, "_printer"):
                 self._printer.commands(command)
@@ -316,7 +315,6 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             base_topic = self._settings.get(["mqtt_topic"])
             full_topic = f"{base_topic}/{topic_suffix}"
             
-            # Minden fontos állapotjelző és profil retained flaget kap
             is_retain = topic_suffix in ["status", "printer", "job", "profile"]
             result = self.mqtt_client.publish(full_topic, message, qos=1, retain=is_retain)
             
@@ -341,11 +339,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
           return dict(
               octoklipscreen_bridge=dict(
                   displayName="Octoklipscreen Bridge",
-                  displayVersion="0.7.4",
+                  displayVersion="0.7.5",
                   type="github_release",
                   user="karolyia79",
                   repo="OctoklipscreenBridge",
-                  current="0.7.4",
+                  current="0.7.5",
                   stable_branch=dict(
                       name="Main",
                       branch="main",
