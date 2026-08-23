@@ -344,6 +344,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         return os.path.join(self._base_folder, "opiklipscreenstat.csv")
 
     def _init_stats_storage(self):
+        try:
+            os.makedirs(self._base_folder, exist_ok=True)
+        except Exception as e:
+            logger.error(f"[STAT] Hiba a data mappa létrehozásakor: {e}")
+
         json_path = self._get_json_path()
         if not os.path.exists(json_path):
             default_config = {
