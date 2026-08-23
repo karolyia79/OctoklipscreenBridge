@@ -51,14 +51,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
 
         # Initialize config and CSV with unique names if not present
         self._init_stats_storage()
-
-    # --- Blueprint API Configuration ---
-    def is_blueprint_protected(self):
-        return False
-
-    def get_blueprint_url_prefix(self):
-        return ""
-
+   
     # --- Settings Defaults ---
     def get_settings_defaults(self):
         """Return default settings"""
@@ -497,6 +490,13 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
 
         return {"config": cfg, "stats": stats, "mat_times": mat_times, "status": "ok"}
 
+    # --- Blueprint API Configuration ---
+    def is_blueprint_protected(self):
+        return False
+
+    def get_blueprint_url_prefix(self):
+        return ""
+                                  
     # --- REST API Végpontok az ESP32 / WebUI számára ---
     @octoprint.plugin.BlueprintPlugin.route("/stats/data", methods=["GET"])
     def get_stats_data(self):
