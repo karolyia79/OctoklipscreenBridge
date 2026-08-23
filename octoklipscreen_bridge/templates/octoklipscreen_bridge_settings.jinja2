@@ -1,57 +1,279 @@
-<form class="form-horizontal" id="settings_plugin_octoklipscreen_bridge">
-    <div class="control-group">
-        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
-        <div class="controls">
-            <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
-            <span class="help-block">IP address or hostname of your MQTT broker</span>
+<div id="settings_plugin_octoklipscreen_bridge">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#settings_octoklipscreen_bridge_mqtt" data-toggle="tab">MQTT Settings</a></li>
+        <li><a href="#settings_octoklipscreen_bridge_stats" data-toggle="tab">Statistics & Materials</a></li>
+        <li><a href="#settings_octoklipscreen_bridge_api" data-toggle="tab">API Documentation</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- 1. TAB: MQTT SETTINGS -->
+        <div class="tab-pane active" id="settings_octoklipscreen_bridge_mqtt">
+            <form class="form-horizontal">
+                <div class="control-group">
+                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
+                    <div class="controls">
+                        <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
+                        <span class="help-block">IP address or hostname of your MQTT broker</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
+                    <div class="controls">
+                        <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
+                        <span class="help-block">MQTT broker port (default: 1883)</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
+                    <div class="controls">
+                        <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
+                        <span class="help-block">Leave empty if authentication is not required</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
+                    <div class="controls">
+                        <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
+                        <span class="help-block">Leave empty if authentication is not required</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
+                    <div class="controls">
+                        <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
+                        <span class="help-block" style="color: #b94a48; font-weight: bold;">DO NOT CHANGE! This topic structure is strictly required for the CYD display firmware compatibility.</span>
+                    </div>
+                </div>
+
+                <div class="alert alert-error" style="background-color: #f2dede; border-color: #ebccd1; color: #a94442;">
+                    <strong>IMPORTANT (Maximum Stability):</strong><br>
+                    For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (`localhost`)!
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Octoklipscreen Bridge Overview:</strong><br>
+                    This plugin bridges your OctoPrint server with the CYD (Cheap Yellow Display) touchscreen firmware, enabling real-time status monitoring and G-code control via MQTT.<br><br>
+                    <strong>Active MQTT Topics:</strong>
+                    <ul style="margin-bottom: 0; margin-top: 5px;">
+                        <li><code>{base_topic}/serial</code> – Real-time G-code communication logs (Send / Recv).</li>
+                        <li><code>{base_topic}/status</code> – Printer and connection status updates (Operational, Printing, Paused, etc.) with retained messages. Automatically refreshed every 15 seconds (heartbeat) or instantly upon receiving a <code>STATUS</code> command.</li>
+                        <li><code>{base_topic}/command</code> – Incoming control commands, G-code execution, and status request queries (send <code>STATUS</code> or <code>GET_STATUS</code> to force immediate update).</li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2. TAB: STATISTICS & MATERIALS SETTINGS -->
+        <div class="tab-pane" id="settings_octoklipscreen_bridge_stats">
+            <form class="form-horizontal">
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="checkbox">
+                            <input type="checkbox" id="opiklipscreen_stat_enabled"> Enable statistics collection
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="opiklipscreen_stat_currency">Currency Symbol:</label>
+                    <div class="controls">
+                        <input type="text" id="opiklipscreen_stat_currency" class="input-small" placeholder="Ft">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="opiklipscreen_stat_cost">Electricity Cost (per kWh):</label>
+                    <div class="controls">
+                        <input type="number" id="opiklipscreen_stat_cost" class="input-small" step="0.1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="opiklipscreen_stat_power">Average Printer Power (W):</label>
+                    <div class="controls">
+                        <input type="number" id="opiklipscreen_stat_power" class="input-small" step="1">
+                    </div>
+                </div>
+
+                <hr>
+                <h4>Material Temperature Ranges (Min - Max)</h4>
+                <table class="table table-striped table-bordered" style="max-width: 700px;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Nozzle Min</th>
+                            <th>Nozzle Max</th>
+                            <th>Bed Min</th>
+                            <th>Bed Max</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="opiklipscreen_materials_table_body">
+                        <!-- Rows generated via JS -->
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-info" id="opiklipscreen_add_material_btn">+ Add New Material</button>
+                
+                <div style="margin-top: 20px;">
+                    <button type="button" class="btn btn-primary" id="opiklipscreen_save_stats_btn">Save Statistics Settings</button>
+                    <button type="button" class="btn btn-danger" id="opiklipscreen_reset_stats_btn" style="float: right;">Reset All Statistics</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 3. TAB: API DOCUMENTATION & EXAMPLES -->
+        <div class="tab-pane" id="settings_octoklipscreen_bridge_api">
+            <div class="alert alert-info">
+                <h4>Octoklipscreen Bridge - REST API Documentation</h4>
+                <p>The server-side statistics module provides dedicated REST API endpoints allowing external devices (e.g., ESP32 displays, web interfaces, custom scripts) to fetch aggregated statistics, update configurations, or reset logged data.</p>
+            </div>
+
+            <h5>1. Fetch Statistics Data (GET)</h5>
+            <pre><code>GET /api/plugin/octoklipscreen_bridge/stats/data</code></pre>
+            <p>Returns the current configuration, total printing times, success/failure counts, costs, and material breakdowns.</p>
+
+            <h5>2. Save Configuration (POST)</h5>
+            <pre><code>POST /api/plugin/octoklipscreen_bridge/stats/save
+Content-Type: application/json
+
+{
+    "enabled": true,
+    "cost_kwh": 5.0,
+    "power_w": 250.0,
+    "currency": "Ft",
+    "materials": [
+        {"name": "PLA", "n_min": 180, "n_max": 220, "b_min": 40, "b_max": 65}
+    ]
+}</code></pre>
+
+            <h5>3. Reset Statistics (POST)</h5>
+            <pre><code>POST /api/plugin/octoklipscreen_bridge/stats/reset</code></pre>
+            <p>Clears the CSV log file and resets historical printing records.</p>
+
+            <hr>
+            <h4>JavaScript Fetch Example (Client Integration)</h4>
+            <pre><code>// Example of asynchronously fetching statistics data in JavaScript:
+fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
+    method: 'GET',
+    headers: {
+        'X-Api-Key': 'YOUR_OCTOPRINT_API_KEY' // Required if called from an external network
+    }
+})
+.then(response => response.json())
+.then(data => {
+    if (data.status === 'printing') {
+        console.log("Printer is currently printing, stats data is locked.");
+    } else {
+        console.log("Total Cost:", data.stats.totalCost);
+        console.log("Materials Config:", data.config.materials);
+    }
+})
+.catch(error => console.error('Error fetching API data:', error));</code></pre>
         </div>
     </div>
+</div>
 
-    <div class="control-group">
-        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
-        <div class="controls">
-            <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
-            <span class="help-block">MQTT broker port (default: 1883)</span>
-        </div>
-    </div>
+<script type="text/javascript">
+    $(function() {
+        function loadStatsSettings() {
+            $.ajax({
+                url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/data",
+                type: "GET",
+                success: function(data) {
+                    if(data && data.config) {
+                        let cfg = data.config;
+                        $("#opiklipscreen_stat_enabled").prop("checked", cfg.enabled);
+                        $("#opiklipscreen_stat_currency").val(cfg.currency || "Ft");
+                        $("#opiklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
+                        $("#opiklipscreen_stat_power").val(cfg.power_w || 250.0);
 
-    <div class="control-group">
-        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
-        <div class="controls">
-            <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
-            <span class="help-block">Leave empty if authentication is not required</span>
-        </div>
-    </div>
+                        let tbody = $("#opiklipscreen_materials_table_body");
+                        tbody.empty();
+                        if(cfg.materials) {
+                            cfg.materials.forEach(m => {
+                                addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
+                            });
+                        }
+                    }
+                }
+            });
+        }
 
-    <div class="control-group">
-        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
-        <div class="controls">
-            <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
-            <span class="help-block">Leave empty if authentication is not required</span>
-        </div>
-    </div>
+        function addMatRow(name="", nmin="", nmax="", bmin="", bmax="") {
+            let tr = $("<tr></tr>");
+            tr.html(
+                `<td><input type='text' class='m_name input-small' value='${name}'></td>` +
+                `<td><input type='number' class='m_nmin input-mini' value='${nmin}'></td>` +
+                `<td><input type='number' class='m_nmax input-mini' value='${nmax}'></td>` +
+                `<td><input type='number' class='m_bmin input-mini' value='${bmin}'></td>` +
+                `<td><input type='number' class='m_bmax input-mini' value='${bmax}'></td>` +
+                `<td><button type='button' class='btn btn-danger btn-mini' onclick='$(this).closest("tr").remove()'>X</button></td>`
+            );
+            $("#opiklipscreen_materials_table_body").append(tr);
+        }
 
-    <div class="control-group">
-        <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
-        <div class="controls">
-            <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
-            <span class="help-block" style="color: #b94a48; font-weight: bold;">DO NOT CHANGE! This topic structure is strictly required for the CYD display firmware compatibility.</span>
-        </div>
-    </div>
+        $("#opiklipscreen_add_material_btn").click(function() {
+            addMatRow();
+        });
 
-    <div class="alert alert-error" style="background-color: #f2dede; border-color: #ebccd1; color: #a94442;">
-        <strong>IMPORTANT (Maximum Stability):</strong><br>
-        For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (`localhost`)!
-    </div>
+        $("#opiklipscreen_save_stats_btn").click(function() {
+            let materials = [];
+            $("#opiklipscreen_materials_table_body tr").each(function() {
+                let r = $(this);
+                materials.push({
+                    name: r.find(".m_name").val(),
+                    n_min: parseFloat(r.find(".m_nmin").val()) || 0,
+                    n_max: parseFloat(r.find(".m_nmax").val()) || 0,
+                    b_min: parseFloat(r.find(".m_bmin").val()) || 0,
+                    b_max: parseFloat(r.find(".m_bmax").val()) || 0
+                });
+            });
 
-    <div class="alert alert-info">
-        <strong>Octoklipscreen Bridge Overview:</strong><br>
-        This plugin bridges your OctoPrint server with the CYD (Cheap Yellow Display) touchscreen firmware, enabling real-time status monitoring and G-code control via MQTT.<br><br>
-        <strong>Active MQTT Topics:</strong>
-        <ul style="margin-bottom: 0; margin-top: 5px;">
-            <li><code>{base_topic}/serial</code> – Real-time G-code communication logs (Send / Recv).</li>
-            <li><code>{base_topic}/status</code> – Printer and connection status updates (Operational, Printing, Paused, etc.) with retained messages. Automatically refreshed every 15 seconds (heartbeat) or instantly upon receiving a <code>STATUS</code> command.</li>
-            <li><code>{base_topic}/command</code> – Incoming control commands, G-code execution, and status request queries (send <code>STATUS</code> or <code>GET_STATUS</code> to force immediate update).</li>
-        </ul>
-    </div>
-</form>
+            let payload = {
+                enabled: $("#opiklipscreen_stat_enabled").is(":checked"),
+                currency: $("#opiklipscreen_stat_currency").val() || "Ft",
+                cost_kwh: parseFloat($("#opiklipscreen_stat_cost").val()) || 0,
+                power_w: parseFloat($("#opiklipscreen_stat_power").val()) || 0,
+                materials: materials
+            };
+
+            $.ajax({
+                url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/save",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payload),
+                success: function() {
+                    new PNotify({title: "Success", text: "Statistics settings saved successfully!", type: "success"});
+                },
+                error: function() {
+                    new PNotify({title: "Error", text: "Failed to save settings!", type: "error"});
+                }
+            });
+        });
+
+        $("#opiklipscreen_reset_stats_btn").click(function() {
+            if(confirm("Are you sure you want to delete all statistical data?")) {
+                $.ajax({
+                    url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/reset",
+                    type: "POST",
+                    success: function() {
+                        new PNotify({title: "Success", text: "Statistical data cleared!", type: "success"});
+                    },
+                    error: function() {
+                        new PNotify({title: "Error", text: "Failed to clear data!", type: "error"});
+                    }
+                });
+            }
+        });
+
+        // Load settings when modal is shown
+        $("#settings_plugin_octoklipscreen_bridge").closest(".modal").on("shown", function() {
+            loadStatsSettings();
+        });
+    });
+</script>
