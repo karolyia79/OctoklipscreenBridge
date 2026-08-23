@@ -14,8 +14,7 @@ import time
 import paho.mqtt.client as mqtt
 
 import octoprint.plugin
-import octoprint.server
-from octoprint.server import flask
+import flask
 from octoprint.util import RepeatedTimer
 
 __all__ = ["OctoklipscreenBridgePlugin"]
