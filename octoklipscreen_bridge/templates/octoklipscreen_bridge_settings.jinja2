@@ -194,48 +194,55 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             tbody.append(tr);
         }
 
+        function populateTable(materials) {
+            let tbody = $("#opiklipscreen_materials_table_body");
+            tbody.empty();
+            if (materials && materials.length > 0) {
+                materials.forEach(m => {
+                    addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
+                });
+            } else {
+                // Alapértelmezett sorok, ha üres lenne
+                addMatRow("PLA", 180, 220, 40, 65);
+                addMatRow("PETG", 225, 250, 65, 85);
+            }
+        }
+
         function loadStatsSettings() {
             $.ajax({
                 url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/data",
                 type: "GET",
                 success: function(data) {
-                    let cfg = (data && data.config) ? data.config : {
-                        enabled: true, currency: "Ft", cost_kwh: 5.0, power_w: 250.0,
-                        materials: [
-                            {name: "PLA", n_min: 180, n_max: 220, b_min: 40, b_max: 65},
-                            {name: "PETG", n_min: 225, n_max: 250, b_min: 65, b_max: 85}
-                        ]
-                    };
-
-                    $("#opiklipscreen_stat_enabled").prop("checked", cfg.enabled);
-                    $("#opiklipscreen_stat_currency").val(cfg.currency || "Ft");
-                    $("#opiklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
-                    $("#opiklipscreen_stat_power").val(cfg.power_w || 250.0);
-
-                    let tbody = $("#opiklipscreen_materials_table_body");
-                    tbody.empty();
-                    if(cfg.materials && cfg.materials.length > 0) {
-                        cfg.materials.forEach(m => {
-                            addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
-                        });
+                    let cfg = (data && data.config) ? data.config : null;
+                    if (cfg) {
+                        $("#opiklipscreen_stat_enabled").prop("checked", cfg.enabled);
+                        $("#opiklipscreen_stat_currency").val(cfg.currency || "Ft");
+                        $("#opiklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
+                        $("#opiklipscreen_stat_power").val(cfg.power_w || 250.0);
+                        populateTable(cfg.materials);
                     } else {
-                        addMatRow("PLA", 180, 220, 40, 65);
+                        populateTable([]);
                     }
                 },
                 error: function() {
-                    let tbody = $("#opiklipscreen_materials_table_body");
-                    tbody.empty();
-                    addMatRow("PLA", 180, 220, 40, 65);
+                    // Hiba esetén is betöltünk alapértelmezetteket, hogy ne maradjon üres a felület
+                    populateTable([]);
                 }
             });
         }
 
-        // Automatikus betöltés, amikor a "Statistics & Materials" fülre kattintanak
+        // Azonnal betöltünk alapból is fix PLA/PETG sorokat, hogy ne legyen üres a táblázat indításkor
+        populateTable([
+            {name: "PLA", n_min: 180, n_max: 220, b_min: 40, b_max: 65},
+            {name: "PETG", n_min: 225, n_max: 250, b_min: 65, b_max: 85}
+        ]);
+
+        // A "Statistics & Materials" fülre kattintva lekérjük a valós adatokat a szerverről
         $("a[href='#settings_octoklipscreen_bridge_stats']").on('shown.bs.tab', function() {
             loadStatsSettings();
         });
 
-        // Biztosítjuk a gomb kattintás eseményét is
+        // "+ Add New Material" gomb eseménykezelője
         $("#opiklipscreen_add_material_btn").off("click").on("click", function() {
             addMatRow();
         });
@@ -291,7 +298,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             }
         });
 
-        // Első betöltéskor is lefut, ha közvetlen nyitják meg
+        // Első oldalbetöltéskor is lefut
         loadStatsSettings();
     });
 </script>
