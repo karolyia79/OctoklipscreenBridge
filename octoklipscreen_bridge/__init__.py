@@ -372,13 +372,34 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
 
     def _load_config(self):
         json_path = self._get_json_path()
+        default_config = {
+            "enabled": True,
+            "cost_kwh": 5.0,
+            "power_w": 250.0,
+            "currency": "Ft",
+            "materials": [
+                {"name": "PLA", "n_min": 180, "n_max": 220, "b_min": 40, "b_max": 65},
+                {"name": "PETG", "n_min": 225, "n_max": 250, "b_min": 65, "b_max": 85},
+                {"name": "ABS", "n_min": 240, "n_max": 280, "b_min": 90, "b_max": 115},
+                {"name": "TPU", "n_min": 200, "n_max": 230, "b_min": 20, "b_max": 50}
+            ]
+        }
+        
         if os.path.exists(json_path):
             try:
                 with open(json_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    content = f.read().strip()
+                    if not content:
+                        return default_config
+                    cfg = json.loads(content)
+                    # Ha esetleg hiányozna a materials kulcs, pótoljuk
+                    if "materials" not in cfg or not cfg["materials"]:
+                        cfg["materials"] = default_config["materials"]
+                    return cfg
             except Exception as e:
                 logger.error(f"Error loading opiklipscreenstat.json: {e}")
-        return {"enabled": True, "cost_kwh": 5.0, "power_w": 250.0, "currency": "Ft", "materials": []}
+                
+        return default_config
 
     def _save_config(self, cfg):
         json_path = self._get_json_path()
