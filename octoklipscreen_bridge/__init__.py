@@ -57,7 +57,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         return False
 
     def get_blueprint_url_prefix(self):
-        return "/stats"
+        return ""
 
     # --- Settings Defaults ---
     def get_settings_defaults(self):
@@ -498,7 +498,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         return {"config": cfg, "stats": stats, "mat_times": mat_times, "status": "ok"}
 
     # --- REST API Végpontok az ESP32 / WebUI számára ---
-    @octoprint.plugin.BlueprintPlugin.route("/data", methods=["GET"])
+    @octoprint.plugin.BlueprintPlugin.route("/stats/data", methods=["GET"])
     def get_stats_data(self):
         is_printing = False
         if hasattr(self, "_printer"):
@@ -513,7 +513,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         data = self._aggregate_stats()
         return flask.jsonify(data)
 
-    @octoprint.plugin.BlueprintPlugin.route("/save", methods=["POST"])
+    @octoprint.plugin.BlueprintPlugin.route("/stats/save", methods=["POST"])
     def save_stats_config(self):
         try:
             req_data = flask.request.get_json()
@@ -524,7 +524,7 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
             logger.error(f"[STAT] Hiba a beállítások mentésekor: {e}")
         return flask.jsonify({"success": False}), 400
 
-    @octoprint.plugin.BlueprintPlugin.route("/reset", methods=["POST"])
+    @octoprint.plugin.BlueprintPlugin.route("/stats/reset", methods=["POST"])
     def reset_stats_data(self):
         try:
             csv_path = self._get_csv_path()
