@@ -230,7 +230,12 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             });
         }
 
-        // Biztosítjuk a gomb kattintás eseményét
+        // Automatikus betöltés, amikor a "Statistics & Materials" fülre kattintanak
+        $("a[href='#settings_octoklipscreen_bridge_stats']").on('shown.bs.tab', function() {
+            loadStatsSettings();
+        });
+
+        // Biztosítjuk a gomb kattintás eseményét is
         $("#opiklipscreen_add_material_btn").off("click").on("click", function() {
             addMatRow();
         });
@@ -277,6 +282,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
                     type: "POST",
                     success: function() {
                         new PNotify({title: "Success", text: "Statistical data cleared!", type: "success"});
+                        loadStatsSettings();
                     },
                     error: function() {
                         new PNotify({title: "Error", text: "Failed to clear data!", type: "error"});
@@ -285,9 +291,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             }
         });
 
-        // Load settings when modal is shown
-        $("#settings_plugin_octoklipscreen_bridge").closest(".modal").on("shown", function() {
-            loadStatsSettings();
-        });
+        // Első betöltéskor is lefut, ha közvetlen nyitják meg
+        loadStatsSettings();
     });
 </script>
