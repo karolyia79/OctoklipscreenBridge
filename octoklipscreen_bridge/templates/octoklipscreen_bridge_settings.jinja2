@@ -205,19 +205,21 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
         }
 
         function addMatRow(name="", nmin="", nmax="", bmin="", bmax="") {
+            let tbody = $("#opiklipscreen_materials_table_body");
             let tr = $("<tr></tr>");
             tr.html(
-                `<td><input type='text' class='m_name input-small' value='${name}'></td>` +
-                `<td><input type='number' class='m_nmin input-mini' value='${nmin}'></td>` +
-                `<td><input type='number' class='m_nmax input-mini' value='${nmax}'></td>` +
-                `<td><input type='number' class='m_bmin input-mini' value='${bmin}'></td>` +
-                `<td><input type='number' class='m_bmax input-mini' value='${bmax}'></td>` +
-                `<td><button type='button' class='btn btn-danger btn-mini' onclick='$(this).closest("tr").remove()'>X</button></td>`
+                "<td><input type='text' class='m_name input-small' value='" + name + "'></td>" +
+                "<td><input type='number' class='m_nmin input-mini' value='" + nmin + "'></td>" +
+                "<td><input type='number' class='m_nmax input-mini' value='" + nmax + "'></td>" +
+                "<td><input type='number' class='m_bmin input-mini' value='" + bmin + "'></td>" +
+                "<td><input type='number' class='m_bmax input-mini' value='" + bmax + "'></td>" +
+                "<td><button type='button' class='btn btn-danger btn-mini' onclick='$(this).closest(\"tr\").remove()'>X</button></td>"
             );
-            $("#opiklipscreen_materials_table_body").append(tr);
+            tbody.append(tr);
         }
 
-        $("#opiklipscreen_add_material_btn").click(function() {
+        // Biztosítjuk, hogy a gomb kattintás eseménye lereagáljon
+        $("#opiklipscreen_add_material_btn").off("click").on("click", function() {
             addMatRow();
         });
 
