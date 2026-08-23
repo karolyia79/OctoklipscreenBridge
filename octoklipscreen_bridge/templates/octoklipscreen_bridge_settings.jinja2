@@ -180,30 +180,6 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
 
 <script type="text/javascript">
     $(function() {
-        function loadStatsSettings() {
-            $.ajax({
-                url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/data",
-                type: "GET",
-                success: function(data) {
-                    if(data && data.config) {
-                        let cfg = data.config;
-                        $("#opiklipscreen_stat_enabled").prop("checked", cfg.enabled);
-                        $("#opiklipscreen_stat_currency").val(cfg.currency || "Ft");
-                        $("#opiklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
-                        $("#opiklipscreen_stat_power").val(cfg.power_w || 250.0);
-
-                        let tbody = $("#opiklipscreen_materials_table_body");
-                        tbody.empty();
-                        if(cfg.materials) {
-                            cfg.materials.forEach(m => {
-                                addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
-                            });
-                        }
-                    }
-                }
-            });
-        }
-
         function addMatRow(name="", nmin="", nmax="", bmin="", bmax="") {
             let tbody = $("#opiklipscreen_materials_table_body");
             let tr = $("<tr></tr>");
@@ -218,7 +194,43 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             tbody.append(tr);
         }
 
-        // Biztosítjuk, hogy a gomb kattintás eseménye lereagáljon
+        function loadStatsSettings() {
+            $.ajax({
+                url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/data",
+                type: "GET",
+                success: function(data) {
+                    let cfg = (data && data.config) ? data.config : {
+                        enabled: true, currency: "Ft", cost_kwh: 5.0, power_w: 250.0,
+                        materials: [
+                            {name: "PLA", n_min: 180, n_max: 220, b_min: 40, b_max: 65},
+                            {name: "PETG", n_min: 225, n_max: 250, b_min: 65, b_max: 85}
+                        ]
+                    };
+
+                    $("#opiklipscreen_stat_enabled").prop("checked", cfg.enabled);
+                    $("#opiklipscreen_stat_currency").val(cfg.currency || "Ft");
+                    $("#opiklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
+                    $("#opiklipscreen_stat_power").val(cfg.power_w || 250.0);
+
+                    let tbody = $("#opiklipscreen_materials_table_body");
+                    tbody.empty();
+                    if(cfg.materials && cfg.materials.length > 0) {
+                        cfg.materials.forEach(m => {
+                            addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
+                        });
+                    } else {
+                        addMatRow("PLA", 180, 220, 40, 65);
+                    }
+                },
+                error: function() {
+                    let tbody = $("#opiklipscreen_materials_table_body");
+                    tbody.empty();
+                    addMatRow("PLA", 180, 220, 40, 65);
+                }
+            });
+        }
+
+        // Biztosítjuk a gomb kattintás eseményét
         $("#opiklipscreen_add_material_btn").off("click").on("click", function() {
             addMatRow();
         });
