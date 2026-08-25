@@ -52,7 +52,7 @@
 
                 <div class="alert alert-error" style="background-color: #f2dede; border-color: #ebccd1; color: #a94442;">
                     <strong>IMPORTANT (Maximum Stability):</strong><br>
-                    For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (`localhost`)!
+                    For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (<code>localhost</code>)!
                 </div>
 
                 <div class="alert alert-info">
@@ -61,8 +61,8 @@
                     <strong>Active MQTT Topics:</strong>
                     <ul style="margin-bottom: 0; margin-top: 5px;">
                         <li><code>{base_topic}/serial</code> – Real-time G-code communication logs (Send / Recv).</li>
-                        <li><code>{base_topic}/status</code> – Printer and connection status updates (Operational, Printing, Paused, etc.) with retained messages. Automatically refreshed every 15 seconds (heartbeat) or instantly upon receiving a <code>STATUS</code> command.</li>
-                        <li><code>{base_topic}/command</code> – Incoming control commands, G-code execution, and status request queries (send <code>STATUS</code> or <code>GET_STATUS</code> to force immediate update).</li>
+                        <li><code>{base_topic}/status</code> – Printer and connection status updates with retained messages. Automatically refreshed every 15 seconds or instantly upon receiving a <code>STATUS</code> command.</li>
+                        <li><code>{base_topic}/command</code> – Incoming control commands, G-code execution, and status request queries.</li>
                     </ul>
                 </div>
             </form>
@@ -74,29 +74,29 @@
                 <div class="control-group">
                     <div class="controls">
                         <label class="checkbox">
-                            <input type="checkbox" id="opiklipscreen_stat_enabled"> Enable statistics collection
+                            <input type="checkbox" id="octoklipscreen_stat_enabled"> Enable statistics collection
                         </label>
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="opiklipscreen_stat_currency">Currency Symbol:</label>
+                    <label class="control-label" for="octoklipscreen_stat_currency">Currency Symbol:</label>
                     <div class="controls">
-                        <input type="text" id="opiklipscreen_stat_currency" class="input-small" placeholder="Ft">
+                        <input type="text" id="octoklipscreen_stat_currency" class="input-small" placeholder="Ft">
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="opiklipscreen_stat_cost">Electricity Cost (per kWh):</label>
+                    <label class="control-label" for="octoklipscreen_stat_cost">Electricity Cost (per kWh):</label>
                     <div class="controls">
-                        <input type="number" id="opiklipscreen_stat_cost" class="input-small" step="0.1">
+                        <input type="number" id="octoklipscreen_stat_cost" class="input-small" step="0.1">
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="opiklipscreen_stat_power">Average Printer Power (W):</label>
+                    <label class="control-label" for="octoklipscreen_stat_power">Average Printer Power (W):</label>
                     <div class="controls">
-                        <input type="number" id="opiklipscreen_stat_power" class="input-small" step="1">
+                        <input type="number" id="octoklipscreen_stat_power" class="input-small" step="1">
                     </div>
                 </div>
 
@@ -113,15 +113,15 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="opiklipscreen_materials_table_body">
+                    <tbody id="octoklipscreen_materials_table_body">
                         <!-- Rows generated via JS -->
                     </tbody>
                 </table>
-                <button type="button" class="btn btn-info" id="opiklipscreen_add_material_btn">+ Add New Material</button>
+                <button type="button" class="btn btn-info" id="octoklipscreen_add_material_btn">+ Add New Material</button>
                 
                 <div style="margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" id="opiklipscreen_save_stats_btn">Save Statistics Settings</button>
-                    <button type="button" class="btn btn-danger" id="opiklipscreen_reset_stats_btn" style="float: right;">Reset All Statistics</button>
+                    <button type="button" class="btn btn-primary" id="octoklipscreen_save_stats_btn">Save Statistics Settings</button>
+                    <button type="button" class="btn btn-danger" id="octoklipscreen_reset_stats_btn" style="float: right;">Reset All Statistics</button>
                 </div>
             </form>
         </div>
@@ -161,7 +161,7 @@ Content-Type: application/json
 fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
     method: 'GET',
     headers: {
-        'X-Api-Key': 'YOUR_OCTOPRINT_API_KEY' // Required if called from an external network
+        'X-Api-Key': 'YOUR_OCTOPRINT_API_KEY'
     }
 })
 .then(response => response.json())
@@ -181,28 +181,32 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
 <script type="text/javascript">
     $(function() {
         function addMatRow(name="", nmin="", nmax="", bmin="", bmax="") {
-            let tbody = $("#opiklipscreen_materials_table_body");
+            let tbody = $("#octoklipscreen_materials_table_body");
             let tr = $("<tr></tr>");
-            tr.html(
-                "<td><input type='text' class='m_name input-small' value='" + name + "'></td>" +
-                "<td><input type='number' class='m_nmin input-mini' value='" + nmin + "'></td>" +
-                "<td><input type='number' class='m_nmax input-mini' value='" + nmax + "'></td>" +
-                "<td><input type='number' class='m_bmin input-mini' value='" + bmin + "'></td>" +
-                "<td><input type='number' class='m_bmax input-mini' value='" + bmax + "'></td>" +
-                "<td><button type='button' class='btn btn-danger btn-mini' onclick='$(this).closest(\"tr\").remove()'>X</button></td>"
-            );
+            
+            tr.append($("<td>").append($("<input>", { type: "text", class: "m_name input-small", value: name })));
+            tr.append($("<td>").append($("<input>", { type: "number", class: "m_nmin input-mini", value: nmin })));
+            tr.append($("<td>").append($("<input>", { type: "number", class: "m_nmax input-mini", value: nmax })));
+            tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmin input-mini", value: bmin })));
+            tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmax input-mini", value: bmax })));
+            tr.append($("<td>").append($("<button>", { 
+                type: "button", 
+                class: "btn btn-danger btn-mini", 
+                text: "X",
+                click: function() { $(this).closest("tr").remove(); } 
+            })));
+            
             tbody.append(tr);
         }
 
         function populateTable(materials) {
-            let tbody = $("#opiklipscreen_materials_table_body");
+            let tbody = $("#octoklipscreen_materials_table_body");
             tbody.empty();
             if (materials && materials.length > 0) {
                 materials.forEach(m => {
                     addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
                 });
             } else {
-                // Alapértelmezett sorok, ha üres lenne
                 addMatRow("PLA", 180, 220, 40, 65);
                 addMatRow("PETG", 225, 250, 65, 85);
             }
@@ -215,41 +219,33 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
                 success: function(data) {
                     let cfg = (data && data.config) ? data.config : null;
                     if (cfg) {
-                        $("#opiklipscreen_stat_enabled").prop("checked", cfg.enabled);
-                        $("#opiklipscreen_stat_currency").val(cfg.currency || "Ft");
-                        $("#opiklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
-                        $("#opiklipscreen_stat_power").val(cfg.power_w || 250.0);
+                        $("#octoklipscreen_stat_enabled").prop("checked", cfg.enabled);
+                        $("#octoklipscreen_stat_currency").val(cfg.currency || "Ft");
+                        $("#octoklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
+                        $("#octoklipscreen_stat_power").val(cfg.power_w || 250.0);
                         populateTable(cfg.materials);
                     } else {
                         populateTable([]);
                     }
                 },
                 error: function() {
-                    // Hiba esetén is betöltünk alapértelmezetteket, hogy ne maradjon üres a felület
                     populateTable([]);
                 }
             });
         }
 
-        // Azonnal betöltünk alapból is fix PLA/PETG sorokat, hogy ne legyen üres a táblázat indításkor
-        populateTable([
-            {name: "PLA", n_min: 180, n_max: 220, b_min: 40, b_max: 65},
-            {name: "PETG", n_min: 225, n_max: 250, b_min: 65, b_max: 85}
-        ]);
-
-        // A "Statistics & Materials" fülre kattintva lekérjük a valós adatokat a szerverről
-        $("a[href='#settings_octoklipscreen_bridge_stats']").on('shown.bs.tab', function() {
+        // Bootstrap 2 / Bootstrap 3+ kompatibilis fül váltás esemény
+        $("a[href='#settings_octoklipscreen_bridge_stats']").on('shown shown.bs.tab', function() {
             loadStatsSettings();
         });
 
-        // "+ Add New Material" gomb eseménykezelője
-        $("#opiklipscreen_add_material_btn").off("click").on("click", function() {
+        $("#octoklipscreen_add_material_btn").off("click").on("click", function() {
             addMatRow();
         });
 
-        $("#opiklipscreen_save_stats_btn").click(function() {
+        $("#octoklipscreen_save_stats_btn").click(function() {
             let materials = [];
-            $("#opiklipscreen_materials_table_body tr").each(function() {
+            $("#octoklipscreen_materials_table_body tr").each(function() {
                 let r = $(this);
                 materials.push({
                     name: r.find(".m_name").val(),
@@ -261,10 +257,10 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             });
 
             let payload = {
-                enabled: $("#opiklipscreen_stat_enabled").is(":checked"),
-                currency: $("#opiklipscreen_stat_currency").val() || "Ft",
-                cost_kwh: parseFloat($("#opiklipscreen_stat_cost").val()) || 0,
-                power_w: parseFloat($("#opiklipscreen_stat_power").val()) || 0,
+                enabled: $("#octoklipscreen_stat_enabled").is(":checked"),
+                currency: $("#octoklipscreen_stat_currency").val() || "Ft",
+                cost_kwh: parseFloat($("#octoklipscreen_stat_cost").val()) || 0,
+                power_w: parseFloat($("#octoklipscreen_stat_power").val()) || 0,
                 materials: materials
             };
 
@@ -282,7 +278,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             });
         });
 
-        $("#opiklipscreen_reset_stats_btn").click(function() {
+        $("#octoklipscreen_reset_stats_btn").click(function() {
             if(confirm("Are you sure you want to delete all statistical data?")) {
                 $.ajax({
                     url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/reset",
@@ -298,7 +294,6 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             }
         });
 
-        // Első oldalbetöltéskor is lefut
         loadStatsSettings();
     });
 </script>
