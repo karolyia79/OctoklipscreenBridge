@@ -105,36 +105,29 @@ class OctoklipscreenBridgePlugin(
     self._status_timer.start()
 
   def on_settings_load(self):
-    data = octoprint.plugin.SettingsPlugin.on_settings_load(self)
-    cfg = self._load_config()
-    if "plugins" in data and "octoklipscreen_bridge" in data["plugins"]:
-      data["plugins"]["octoklipscreen_bridge"]["stat_enabled"] = cfg.get(
-          "enabled", True
-      )
-      data["plugins"]["octoklipscreen_bridge"]["stat_currency"] = (
-          cfg.get("currency", "Ft")
-      )
-      data["plugins"]["octoklipscreen_bridge"]["stat_cost_kwh"] = cfg.get(
-          "cost_kwh", 5.0
-      )
-      data["plugins"]["octoklipscreen_bridge"]["stat_power_w"] = (
-          cfg.get("power_w", 250.0)
-      )
-      data["plugins"]["octoklipscreen_bridge"]["materials"] = cfg.get(
-          "materials", []
-      )
-    return data
+      data = octoprint.plugin.SettingsPlugin.on_settings_load(self)
+      cfg = self._load_config()
 
-  def on_settings_save(self, data):
-    octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-    cfg = {
-        "enabled": self._settings.get_boolean(["stat_enabled"]),
-        "currency": self._settings.get(["stat_currency"]),
-        "cost_kwh": self._settings.get_float(["stat_cost_kwh"]),
-        "power_w": self._settings.get_float(["stat_power_w"]),
-        "materials": self._settings.get(["materials"]),
-    }
-    self._save_config(cfg)
+      # Az OctoPrint közvetlenül a plugin szótárát adja át (nincs plugins.octoklipscreen_bridge csomagolás!)
+      data["stat_enabled"] = cfg.get("enabled", True)
+      data["stat_currency"] = cfg.get("currency", "Ft")
+      data["stat_cost_kwh"] = cfg.get("cost_kwh", 5.0)
+      data["stat_power_w"] = cfg.get("power_w", 250.0)
+      data["materials"] = cfg.get("materials", [])
+
+      return data
+
+    def on_settings_save(self, data):
+      # A mentéskor kapott adatokat közvetlenül kiírjuk a saját JSON fájlba
+      cfg = {
+          "enabled": data.get("stat_enabled", True),
+          "currency": data.get("stat_currency", "Ft"),
+          "cost_kwh": float(data.get("stat_cost_kwh", 5.0)),
+          "power_w": float(data.get("stat_power_w", 250.0)),
+          "materials": data.get("materials", []),
+      }
+      self._save_config(cfg)
+      octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
     
   def on_shutdown(self):
     """Called when OctoPrint is shutting down"""
