@@ -1,136 +1,134 @@
-<div id="settings_plugin_octoklipscreen_bridge">
-    <!-- Tab Navigation -->
-    <ul class="nav nav-tabs">
-        <li class="active"><a href="#settings_octoklipscreen_bridge_mqtt" data-toggle="tab">MQTT Settings</a></li>
-        <li><a href="#settings_octoklipscreen_bridge_stats" data-toggle="tab">Statistics & Materials</a></li>
-        <li><a href="#settings_octoklipscreen_bridge_api" data-toggle="tab">API Documentation</a></li>
-    </ul>
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#settings_octoklipscreen_bridge_mqtt" data-toggle="tab">MQTT Settings</a></li>
+    <li><a href="#settings_octoklipscreen_bridge_stats" data-toggle="tab">Statistics & Materials</a></li>
+    <li><a href="#settings_octoklipscreen_bridge_api" data-toggle="tab">API Documentation</a></li>
+</ul>
 
-    <div class="tab-content">
-        <!-- 1. TAB: MQTT SETTINGS -->
-        <div class="tab-pane active" id="settings_octoklipscreen_bridge_mqtt">
-            <form class="form-horizontal">
-                <div class="control-group">
-                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
-                    <div class="controls">
-                        <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
-                        <span class="help-block">IP address or hostname of your MQTT broker</span>
-                    </div>
+<div class="tab-content">
+    <!-- 1. TAB: MQTT SETTINGS -->
+    <div class="tab-pane active" id="settings_octoklipscreen_bridge_mqtt">
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-host">MQTT Host:</label>
+                <div class="controls">
+                    <input type="text" id="settings-octoklipscreen_bridge-mqtt-host" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_host" placeholder="localhost">
+                    <span class="help-block">IP address or hostname of your MQTT broker</span>
                 </div>
-
-                <div class="control-group">
-                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
-                    <div class="controls">
-                        <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
-                        <span class="help-block">MQTT broker port (default: 1883)</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
-                    <div class="controls">
-                        <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
-                        <span class="help-block">Leave empty if authentication is not required</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
-                    <div class="controls">
-                        <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
-                        <span class="help-block">Leave empty if authentication is not required</span>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
-                    <div class="controls">
-                        <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
-                        <span class="help-block" style="color: #b94a48; font-weight: bold;">DO NOT CHANGE! This topic structure is strictly required for the CYD display firmware compatibility.</span>
-                    </div>
-                </div>
-
-                <div class="alert alert-error" style="background-color: #f2dede; border-color: #ebccd1; color: #a94442;">
-                    <strong>IMPORTANT (Maximum Stability):</strong><br>
-                    For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (<code>localhost</code>)!
-                </div>
-            </form>
-        </div>
-
-        <!-- 2. TAB: STATISTICS & MATERIALS SETTINGS -->
-        <div class="tab-pane" id="settings_octoklipscreen_bridge_stats">
-            <form class="form-horizontal">
-                <div class="control-group">
-                    <div class="controls">
-                        <label class="checkbox">
-                            <input type="checkbox" data-bind="checked: settings.plugins.octoklipscreen_bridge.stat_enabled"> Enable statistics collection
-                        </label>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Currency Symbol:</label>
-                    <div class="controls">
-                        <input type="text" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_currency" placeholder="Ft">
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Electricity Cost (per kWh):</label>
-                    <div class="controls">
-                        <input type="number" class="input-small" step="0.1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_cost_kwh">
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Average Printer Power (W):</label>
-                    <div class="controls">
-                        <input type="number" class="input-small" step="1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_power_w">
-                    </div>
-                </div>
-
-                <hr>
-                <h4>Material Temperature Ranges (Min - Max)</h4>
-                <table class="table table-striped table-bordered" style="max-width: 700px;">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Nozzle Min</th>
-                            <th>Nozzle Max</th>
-                            <th>Bed Min</th>
-                            <th>Bed Max</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody data-bind="foreach: settings.plugins.octoklipscreen_bridge.materials">
-                        <tr>
-                            <td><input type="text" class="input-small" data-bind="value: name"></td>
-                            <td><input type="number" class="input-mini" data-bind="value: n_min"></td>
-                            <td><input type="number" class="input-mini" data-bind="value: n_max"></td>
-                            <td><input type="number" class="input-mini" data-bind="value: b_min"></td>
-                            <td><input type="number" class="input-mini" data-bind="value: b_max"></td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-mini" data-bind="click: function() { $root.settings.plugins.octoklipscreen_bridge.materials.remove($data); }">X</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <button type="button" class="btn" data-bind="click: function() { settings.plugins.octoklipscreen_bridge.materials.push({name: 'Új anyag', n_min: 180, n_max: 220, b_min: 40, b_max: 60}); }">+ Add New Material</button>
-            </form>
-        </div>
-
-        <!-- 3. TAB: API DOCUMENTATION -->
-        <div class="tab-pane" id="settings_octoklipscreen_bridge_api">
-            <div class="alert alert-info">
-                <h4>Octoklipscreen Bridge - REST API Documentation</h4>
-                <p>The server-side statistics module provides dedicated REST API endpoints allowing external devices (e.g., ESP32 displays, web interfaces, custom scripts) to fetch aggregated statistics, update configurations, or reset logged data.</p>
             </div>
-            <h5>1. Fetch Statistics Data (GET)</h5>
-            <pre><code>GET /plugin/octoklipscreen_bridge/stats/data</code></pre>
-            <h5>2. Save Configuration (POST)</h5>
-            <pre><code>POST /plugin/octoklipscreen_bridge/stats/save</code></pre>
-            <h5>3. Reset Statistics (POST)</h5>
-            <pre><code>POST /plugin/octoklipscreen_bridge/stats/reset</code></pre>
+
+            <div class="control-group">
+                <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-port">MQTT Port:</label>
+                <div class="controls">
+                    <input type="number" id="settings-octoklipscreen_bridge-mqtt-port" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_port" placeholder="1883" min="1" max="65535">
+                    <span class="help-block">MQTT broker port (default: 1883)</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-username">MQTT Username:</label>
+                <div class="controls">
+                    <input type="text" id="settings-octoklipscreen_bridge-mqtt-username" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_username" placeholder="(optional)">
+                    <span class="help-block">Leave empty if authentication is not required</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-password">MQTT Password:</label>
+                <div class="controls">
+                    <input type="password" id="settings-octoklipscreen_bridge-mqtt-password" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_password" placeholder="(optional)">
+                    <span class="help-block">Leave empty if authentication is not required</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="settings-octoklipscreen_bridge-mqtt-topic">MQTT Topic:</label>
+                <div class="controls">
+                    <input type="text" id="settings-octoklipscreen_bridge-mqtt-topic" class="input-large" data-bind="value: settings.plugins.octoklipscreen_bridge.mqtt_topic" placeholder="octoprint/serial">
+                    <span class="help-block" style="color: #b94a48; font-weight: bold;">DO NOT CHANGE! This topic structure is strictly required for the CYD display firmware compatibility.</span>
+                </div>
+            </div>
+
+            <div class="alert alert-error" style="background-color: #f2dede; border-color: #ebccd1; color: #a94442;">
+                <strong>IMPORTANT (Maximum Stability):</strong><br>
+                For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (<code>localhost</code>)!
+            </div>
+        </form>
+    </div>
+
+    <!-- 2. TAB: STATISTICS & MATERIALS SETTINGS -->
+    <div class="tab-pane" id="settings_octoklipscreen_bridge_stats">
+        <form class="form-horizontal">
+            <div class="control-group">
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" data-bind="checked: settings.plugins.octoklipscreen_bridge.stat_enabled"> Enable statistics collection
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Currency Symbol:</label>
+                <div class="controls">
+                    <input type="text" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_currency" placeholder="Ft">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Electricity Cost (per kWh):</label>
+                <div class="controls">
+                    <input type="number" class="input-small" step="0.1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_cost_kwh">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Average Printer Power (W):</label>
+                <div class="controls">
+                    <input type="number" class="input-small" step="1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_power_w">
+                </div>
+            </div>
+
+            <hr>
+            <h4>Material Temperature Ranges (Min - Max)</h4>
+            <table class="table table-striped table-bordered" style="max-width: 700px;">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Nozzle Min</th>
+                        <th>Nozzle Max</th>
+                        <th>Bed Min</th>
+                        <th>Bed Max</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: settings.plugins.octoklipscreen_bridge.materials">
+                    <tr>
+                        <td><input type="text" class="input-small" data-bind="value: name"></td>
+                        <td><input type="number" class="input-mini" data-bind="value: n_min"></td>
+                        <td><input type="number" class="input-mini" data-bind="value: n_max"></td>
+                        <td><input type="number" class="input-mini" data-bind="value: b_min"></td>
+                        <td><input type="number" class="input-mini" data-bind="value: b_max"></td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-mini" data-bind="click: $parent.settings.plugins.octoklipscreen_bridge.materials.remove.bind($parent.settings.plugins.octoklipscreen_bridge.materials)">X</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn" data-bind="click: function() { settings.plugins.octoklipscreen_bridge.materials.push({name: 'Új anyag', n_min: 180, n_max: 220, b_min: 40, b_max: 60}); }">+ Add New Material</button>
+        </form>
+    </div>
+
+    <!-- 3. TAB: API DOCUMENTATION -->
+    <div class="tab-pane" id="settings_octoklipscreen_bridge_api">
+        <div class="alert alert-info">
+            <h4>Octoklipscreen Bridge - REST API Documentation</h4>
+            <p>The server-side statistics module provides dedicated REST API endpoints allowing external devices (e.g., ESP32 displays, web interfaces, custom scripts) to fetch aggregated statistics, update configurations, or reset logged data.</p>
         </div>
+        <h5>1. Fetch Statistics Data (GET)</h5>
+        <pre><code>GET /plugin/octoklipscreen_bridge/stats/data</code></pre>
+        <h5>2. Save Configuration (POST)</h5>
+        <pre><code>POST /plugin/octoklipscreen_bridge/stats/save</code></pre>
+        <h5>3. Reset Statistics (POST)</h5>
+        <pre><code>POST /plugin/octoklipscreen_bridge/stats/reset</code></pre>
     </div>
 </div>
