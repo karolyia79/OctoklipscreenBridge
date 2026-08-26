@@ -682,11 +682,11 @@ class OctoklipscreenBridgePlugin(
         return dict(
             octoklipscreen_bridge=dict(
                 displayName="Octoklipscreen Bridge",
-                displayVersion="0.8.4",
+                displayVersion="0.8.5",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.8.4",
+                current="0.8.5",
                 stable_branch=dict(
                     name="Main", branch="main", commitish=["main"]
                 ),
