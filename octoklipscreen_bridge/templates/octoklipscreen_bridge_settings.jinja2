@@ -114,7 +114,7 @@
                         </tr>
                     </thead>
                     <tbody id="octoklipscreen_materials_table_body">
-                        <!-- Rows generated via JS -->
+                        <!-- Dynamic rows -->
                     </tbody>
                 </table>
                 <button type="button" class="btn" id="octoklipscreen_add_material_btn">+ Add New Material</button>
@@ -135,56 +135,22 @@
             </div>
 
             <h5>1. Fetch Statistics Data (GET)</h5>
-            <pre><code>GET /api/plugin/octoklipscreen_bridge/stats/data</code></pre>
-            <p>Returns the current configuration, total printing times, success/failure counts, costs, and material breakdowns.</p>
+            <pre><code>GET /plugin/octoklipscreen_bridge/stats/data</code></pre>
 
             <h5>2. Save Configuration (POST)</h5>
-            <pre><code>POST /api/plugin/octoklipscreen_bridge/stats/save
-Content-Type: application/json
-
-{
-    "enabled": true,
-    "cost_kwh": 5.0,
-    "power_w": 250.0,
-    "currency": "Ft",
-    "materials": [
-        {"name": "PLA", "n_min": 180, "n_max": 220, "b_min": 40, "b_max": 65}
-    ]
-}</code></pre>
+            <pre><code>POST /plugin/octoklipscreen_bridge/stats/save</code></pre>
 
             <h5>3. Reset Statistics (POST)</h5>
-            <pre><code>POST /api/plugin/octoklipscreen_bridge/stats/reset</code></pre>
-            <p>Clears the CSV log file and resets historical printing records.</p>
-
-            <hr>
-            <h4>JavaScript Fetch Example (Client Integration)</h4>
-            <pre><code>// Example of asynchronously fetching statistics data in JavaScript:
-fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
-    method: 'GET',
-    headers: {
-        'X-Api-Key': 'YOUR_OCTOPRINT_API_KEY'
-    }
-})
-.then(response => response.json())
-.then(data => {
-    if (data.status === 'printing') {
-        console.log("Printer is currently printing, stats data is locked.");
-    } else {
-        console.log("Total Cost:", data.stats.totalCost);
-        console.log("Materials Config:", data.config.materials);
-    }
-})
-.catch(error => console.error('Error fetching API data:', error));</code></pre>
+            <pre><code>POST /plugin/octoklipscreen_bridge/stats/reset</code></pre>
         </div>
     </div>
 </div>
 
 <script type="text/javascript">
     $(function() {
-        // API végpont biztonságos összerakása
-        var apiBase = (typeof BASEURL !== "undefined" ? BASEURL : "/") + "api/plugin/octoklipscreen_bridge/stats";
+        // Blueprint szerinti elérés (nincs /api/ prefix)
+        var apiBase = (typeof BASEURL !== "undefined" ? BASEURL : "/") + "plugin/octoklipscreen_bridge/stats";
 
-        // Sor hozzáadása a táblázathoz
         function addMatRow(name, nmin, nmax, bmin, bmax) {
             name = name || "";
             nmin = nmin !== undefined ? nmin : 180;
@@ -201,7 +167,6 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmin input-mini", value: bmin })));
             tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmax input-mini", value: bmax })));
             
-            // Dinamikus törlés gomb (a sorhoz kötve)
             var delBtn = $("<button>", { type: "button", class: "btn btn-danger btn-mini", text: "X" });
             delBtn.on("click", function() { $(this).closest("tr").remove(); });
             tr.append($("<td>").append(delBtn));
@@ -209,7 +174,6 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             tbody.append(tr);
         }
 
-        // Táblázat feltöltése JSON adatokból
         function populateTable(materials) {
             var tbody = $("#octoklipscreen_materials_table_body");
             tbody.empty();
@@ -220,7 +184,6 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             }
         }
 
-        // JSON adatok lekérése a Python API-ról
         function loadStatsSettings(showNotification) {
             $.ajax({
                 url: apiBase + "/data",
@@ -240,12 +203,11 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
                             new PNotify({title: "Frissítve", text: "Adatok sikeresen újratöltve!", type: "info"});
                         }
                     } else {
-                        console.warn("A JSON-ben nincs érvényes materials kulcs, üres táblázat jön létre.");
                         populateTable([]);
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error("Nem sikerült lekérni a statisztikai JSON-t az API-tól:", error);
+                    console.error("Nem sikerült lekérni a statisztikai JSON-t:", error);
                     if (showNotification) {
                         new PNotify({title: "Hiba", text: "Nem sikerült lekérni az adatokat!", type: "error"});
                     }
@@ -253,15 +215,12 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             });
         }
 
-        // --- ESEMÉNY DELEGÁLÁSOK ---
-
-        // + Add New Material Gomb
+        // Gombkezelők delegálva
         $(document).off("click", "#octoklipscreen_add_material_btn").on("click", "#octoklipscreen_add_material_btn", function(e) {
             e.preventDefault();
             addMatRow("Új anyag", 180, 220, 40, 60);
         });
 
-        // Mentés Gomb
         $(document).off("click", "#octoklipscreen_save_stats_btn").on("click", "#octoklipscreen_save_stats_btn", function(e) {
             e.preventDefault();
             var materials = [];
@@ -290,24 +249,22 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: function() {
-                    new PNotify({title: "Sikeres mentés", text: "Statisztika és anyagok elmentve a JSON-be!", type: "success"});
+                    new PNotify({title: "Sikeres mentés", text: "Statisztika és anyagok elmentve!", type: "success"});
                 },
                 error: function() {
                     new PNotify({title: "Hiba", text: "Nem sikerült menteni a beállításokat!", type: "error"});
                 }
             });
         });
-        
-        // Frissítés (Reload) Gomb
+
         $(document).off("click", "#octoklipscreen_reload_stats_btn").on("click", "#octoklipscreen_reload_stats_btn", function(e) {
             e.preventDefault();
-            loadStatsSettings(true); // true = mutassa a PNotify értesítést
+            loadStatsSettings(true);
         });
 
-        // Törlés Gomb
         $(document).off("click", "#octoklipscreen_reset_stats_btn").on("click", "#octoklipscreen_reset_stats_btn", function(e) {
             e.preventDefault();
-            if(confirm("Biztosan törölni akarod az eddigi statisztikákat? A CSV fájl tartalma is törlődik!")) {
+            if(confirm("Biztosan törölni akarod az eddigi statisztikákat?")) {
                 $.ajax({
                     url: apiBase + "/reset",
                     type: "POST",
@@ -321,14 +278,12 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             }
         });
 
-        // Adatok beolvasása, ha a fülre kattintunk a beállításokban
         $(document).on('shown', 'a[data-toggle="tab"]', function (e) {
             if ($(e.target).attr('href') === '#settings_octoklipscreen_bridge_stats') {
                 loadStatsSettings(false);
             }
         });
 
-        // Extraként megpróbáljuk betölteni kis késleltetéssel az oldal nyitásakor
         setTimeout(function() { loadStatsSettings(false); }, 1000);
     });
 </script>
