@@ -54,17 +54,6 @@
                     <strong>IMPORTANT (Maximum Stability):</strong><br>
                     For maximum stability and zero latency, it is highly recommended to run a dedicated local Mosquitto MQTT broker directly on the OctoPrint server (<code>localhost</code>)!
                 </div>
-
-                <div class="alert alert-info">
-                    <strong>Octoklipscreen Bridge Overview:</strong><br>
-                    This plugin bridges your OctoPrint server with the CYD (Cheap Yellow Display) touchscreen firmware, enabling real-time status monitoring and G-code control via MQTT.<br><br>
-                    <strong>Active MQTT Topics:</strong>
-                    <ul style="margin-bottom: 0; margin-top: 5px;">
-                        <li><code>{base_topic}/serial</code> – Real-time G-code communication logs (Send / Recv).</li>
-                        <li><code>{base_topic}/status</code> – Printer and connection status updates with retained messages. Automatically refreshed every 15 seconds or instantly upon receiving a <code>STATUS</code> command.</li>
-                        <li><code>{base_topic}/command</code> – Incoming control commands, G-code execution, and status request queries.</li>
-                    </ul>
-                </div>
             </form>
         </div>
 
@@ -80,23 +69,23 @@
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="octoklipscreen_stat_currency">Currency Symbol:</label>
+                    <label class="control-label">Currency Symbol:</label>
                     <div class="controls">
-                        <input type="text" id="octoklipscreen_stat_currency" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_currency" placeholder="Ft">
+                        <input type="text" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_currency" placeholder="Ft">
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="octoklipscreen_stat_cost">Electricity Cost (per kWh):</label>
+                    <label class="control-label">Electricity Cost (per kWh):</label>
                     <div class="controls">
-                        <input type="number" id="octoklipscreen_stat_cost" class="input-small" step="0.1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_cost_kwh">
+                        <input type="number" class="input-small" step="0.1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_cost_kwh">
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label" for="octoklipscreen_stat_power">Average Printer Power (W):</label>
+                    <label class="control-label">Average Printer Power (W):</label>
                     <div class="controls">
-                        <input type="number" id="octoklipscreen_stat_power" class="input-small" step="1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_power_w">
+                        <input type="number" class="input-small" step="1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_power_w">
                     </div>
                 </div>
 
@@ -121,7 +110,7 @@
                             <td><input type="number" class="input-mini" data-bind="value: b_min"></td>
                             <td><input type="number" class="input-mini" data-bind="value: b_max"></td>
                             <td>
-                                <button type="button" class="btn btn-danger btn-mini" data-bind="click: $parent.settings.plugins.octoklipscreen_bridge.materials.remove.bind($parent.settings.plugins.octoklipscreen_bridge.materials)">X</button>
+                                <button type="button" class="btn btn-danger btn-mini" data-bind="click: $root.settings.plugins.octoklipscreen_bridge.materials.remove">X</button>
                             </td>
                         </tr>
                     </tbody>
@@ -130,19 +119,16 @@
             </form>
         </div>
 
-        <!-- 3. TAB: API DOCUMENTATION & EXAMPLES -->
+        <!-- 3. TAB: API DOCUMENTATION -->
         <div class="tab-pane" id="settings_octoklipscreen_bridge_api">
             <div class="alert alert-info">
                 <h4>Octoklipscreen Bridge - REST API Documentation</h4>
                 <p>The server-side statistics module provides dedicated REST API endpoints allowing external devices (e.g., ESP32 displays, web interfaces, custom scripts) to fetch aggregated statistics, update configurations, or reset logged data.</p>
             </div>
-
             <h5>1. Fetch Statistics Data (GET)</h5>
             <pre><code>GET /plugin/octoklipscreen_bridge/stats/data</code></pre>
-
             <h5>2. Save Configuration (POST)</h5>
             <pre><code>POST /plugin/octoklipscreen_bridge/stats/save</code></pre>
-
             <h5>3. Reset Statistics (POST)</h5>
             <pre><code>POST /plugin/octoklipscreen_bridge/stats/reset</code></pre>
         </div>
