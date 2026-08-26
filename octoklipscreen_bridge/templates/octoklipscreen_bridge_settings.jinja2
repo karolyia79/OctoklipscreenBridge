@@ -110,7 +110,7 @@
                             <td><input type="number" class="input-mini" data-bind="value: b_min"></td>
                             <td><input type="number" class="input-mini" data-bind="value: b_max"></td>
                             <td>
-                                <button type="button" class="btn btn-danger btn-mini" data-bind="click: $root.settings.plugins.octoklipscreen_bridge.materials.remove">X</button>
+                                <button type="button" class="btn btn-danger btn-mini" data-bind="click: function() { $root.settings.plugins.octoklipscreen_bridge.materials.remove($data); }">X</button>
                             </td>
                         </tr>
                     </tbody>
