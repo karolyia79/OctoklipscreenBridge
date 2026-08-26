@@ -214,7 +214,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
 
         function loadStatsSettings() {
             $.ajax({
-                url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/data",
+                url: BASEURL + "api/plugin/octoklipscreen_bridge/stats/data",
                 type: "GET",
                 success: function(data) {
                     let cfg = (data && data.config) ? data.config : null;
@@ -265,7 +265,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             };
 
             $.ajax({
-                url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/save",
+                url: BASEURL + "api/plugin/octoklipscreen_bridge/stats/save",
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(payload),
@@ -281,7 +281,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
         $("#octoklipscreen_reset_stats_btn").click(function() {
             if(confirm("Are you sure you want to delete all statistical data?")) {
                 $.ajax({
-                    url: API_BASEURL + "plugin/octoklipscreen_bridge/stats/reset",
+                    url: BASEURL + "api/plugin/octoklipscreen_bridge/stats/reset",
                     type: "POST",
                     success: function() {
                         new PNotify({title: "Success", text: "Statistical data cleared!", type: "success"});
