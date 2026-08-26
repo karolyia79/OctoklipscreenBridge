@@ -104,6 +104,38 @@ class OctoklipscreenBridgePlugin(
     self._status_timer = RepeatedTimer(1.0, self._send_periodic_updates)
     self._status_timer.start()
 
+  def on_settings_load(self):
+    data = octoprint.plugin.SettingsPlugin.on_settings_load(self)
+    cfg = self._load_config()
+    if "plugins" in data and "octoklipscreen_bridge" in data["plugins"]:
+      data["plugins"]["octoklipscreen_bridge"]["stat_enabled"] = cfg.get(
+          "enabled", True
+      )
+      data["plugins"]["octoklipscreen_bridge"]["stat_currency"] = (
+          cfg.get("currency", "Ft")
+      )
+      data["plugins"]["octoklipscreen_bridge"]["stat_cost_kwh"] = cfg.get(
+          "cost_kwh", 5.0
+      )
+      data["plugins"]["octoklipscreen_bridge"]["stat_power_w"] = (
+          cfg.get("power_w", 250.0)
+      )
+      data["plugins"]["octoklipscreen_bridge"]["materials"] = cfg.get(
+          "materials", []
+      )
+    return data
+
+  def on_settings_save(self, data):
+    octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+    cfg = {
+        "enabled": self._settings.get_boolean(["stat_enabled"]),
+        "currency": self._settings.get(["stat_currency"]),
+        "cost_kwh": self._settings.get_float(["stat_cost_kwh"]),
+        "power_w": self._settings.get_float(["stat_power_w"]),
+        "materials": self._settings.get(["materials"]),
+    }
+    self._save_config(cfg)
+    
   def on_shutdown(self):
     """Called when OctoPrint is shutting down"""
     logger.info("OctoklipscreenBridge plugin shutting down")
