@@ -74,7 +74,7 @@
                 <div class="control-group">
                     <div class="controls">
                         <label class="checkbox">
-                            <input type="checkbox" id="octoklipscreen_stat_enabled"> Enable statistics collection
+                            <input type="checkbox" data-bind="checked: settings.plugins.octoklipscreen_bridge.stat_enabled"> Enable statistics collection
                         </label>
                     </div>
                 </div>
@@ -82,21 +82,21 @@
                 <div class="control-group">
                     <label class="control-label" for="octoklipscreen_stat_currency">Currency Symbol:</label>
                     <div class="controls">
-                        <input type="text" id="octoklipscreen_stat_currency" class="input-small" placeholder="Ft">
+                        <input type="text" id="octoklipscreen_stat_currency" class="input-small" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_currency" placeholder="Ft">
                     </div>
                 </div>
 
                 <div class="control-group">
                     <label class="control-label" for="octoklipscreen_stat_cost">Electricity Cost (per kWh):</label>
                     <div class="controls">
-                        <input type="number" id="octoklipscreen_stat_cost" class="input-small" step="0.1">
+                        <input type="number" id="octoklipscreen_stat_cost" class="input-small" step="0.1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_cost_kwh">
                     </div>
                 </div>
 
                 <div class="control-group">
                     <label class="control-label" for="octoklipscreen_stat_power">Average Printer Power (W):</label>
                     <div class="controls">
-                        <input type="number" id="octoklipscreen_stat_power" class="input-small" step="1">
+                        <input type="number" id="octoklipscreen_stat_power" class="input-small" step="1" data-bind="value: settings.plugins.octoklipscreen_bridge.stat_power_w">
                     </div>
                 </div>
 
@@ -113,17 +113,20 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="octoklipscreen_materials_table_body">
-                        <!-- Dynamic rows -->
+                    <tbody data-bind="foreach: settings.plugins.octoklipscreen_bridge.materials">
+                        <tr>
+                            <td><input type="text" class="input-small" data-bind="value: name"></td>
+                            <td><input type="number" class="input-mini" data-bind="value: n_min"></td>
+                            <td><input type="number" class="input-mini" data-bind="value: n_max"></td>
+                            <td><input type="number" class="input-mini" data-bind="value: b_min"></td>
+                            <td><input type="number" class="input-mini" data-bind="value: b_max"></td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-mini" data-bind="click: $parent.settings.plugins.octoklipscreen_bridge.materials.remove.bind($parent.settings.plugins.octoklipscreen_bridge.materials)">X</button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
-                <button type="button" class="btn" id="octoklipscreen_add_material_btn">+ Add New Material</button>
-                
-                <div style="margin-top: 20px;">
-                    <button type="button" class="btn btn-primary" id="octoklipscreen_save_stats_btn">Save Statistics Settings</button>
-                    <button type="button" class="btn btn-info" id="octoklipscreen_reload_stats_btn">Reload Settings</button>
-                    <button type="button" class="btn btn-danger" id="octoklipscreen_reset_stats_btn" style="float: right;">Reset All Statistics</button>
-                </div>
+                <button type="button" class="btn" data-bind="click: function() { settings.plugins.octoklipscreen_bridge.materials.push({name: 'Új anyag', n_min: 180, n_max: 220, b_min: 40, b_max: 60}); }">+ Add New Material</button>
             </form>
         </div>
 
@@ -145,145 +148,3 @@
         </div>
     </div>
 </div>
-
-<script type="text/javascript">
-    $(function() {
-        // Blueprint szerinti elérés (nincs /api/ prefix)
-        var apiBase = (typeof BASEURL !== "undefined" ? BASEURL : "/") + "plugin/octoklipscreen_bridge/stats";
-
-        function addMatRow(name, nmin, nmax, bmin, bmax) {
-            name = name || "";
-            nmin = nmin !== undefined ? nmin : 180;
-            nmax = nmax !== undefined ? nmax : 220;
-            bmin = bmin !== undefined ? bmin : 40;
-            bmax = bmax !== undefined ? bmax : 60;
-
-            var tbody = $("#octoklipscreen_materials_table_body");
-            var tr = $("<tr></tr>");
-            
-            tr.append($("<td>").append($("<input>", { type: "text", class: "m_name input-small", value: name })));
-            tr.append($("<td>").append($("<input>", { type: "number", class: "m_nmin input-mini", value: nmin })));
-            tr.append($("<td>").append($("<input>", { type: "number", class: "m_nmax input-mini", value: nmax })));
-            tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmin input-mini", value: bmin })));
-            tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmax input-mini", value: bmax })));
-            
-            var delBtn = $("<button>", { type: "button", class: "btn btn-danger btn-mini", text: "X" });
-            delBtn.on("click", function() { $(this).closest("tr").remove(); });
-            tr.append($("<td>").append(delBtn));
-            
-            tbody.append(tr);
-        }
-
-        function populateTable(materials) {
-            var tbody = $("#octoklipscreen_materials_table_body");
-            tbody.empty();
-            if (materials && materials.length > 0) {
-                $.each(materials, function(index, m) {
-                    addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
-                });
-            }
-        }
-
-        function loadStatsSettings(showNotification) {
-            $.ajax({
-                url: apiBase + "/data",
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-                    var cfg = (data && data.config !== undefined) ? data.config : data;
-                    
-                    if (cfg && cfg.materials) {
-                        $("#octoklipscreen_stat_enabled").prop("checked", cfg.enabled);
-                        $("#octoklipscreen_stat_currency").val(cfg.currency || "Ft");
-                        $("#octoklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
-                        $("#octoklipscreen_stat_power").val(cfg.power_w || 250.0);
-                        populateTable(cfg.materials);
-                        
-                        if (showNotification) {
-                            new PNotify({title: "Frissítve", text: "Adatok sikeresen újratöltve!", type: "info"});
-                        }
-                    } else {
-                        populateTable([]);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("Nem sikerült lekérni a statisztikai JSON-t:", error);
-                    if (showNotification) {
-                        new PNotify({title: "Hiba", text: "Nem sikerült lekérni az adatokat!", type: "error"});
-                    }
-                }
-            });
-        }
-
-        // Gombkezelők delegálva
-        $(document).off("click", "#octoklipscreen_add_material_btn").on("click", "#octoklipscreen_add_material_btn", function(e) {
-            e.preventDefault();
-            addMatRow("Új anyag", 180, 220, 40, 60);
-        });
-
-        $(document).off("click", "#octoklipscreen_save_stats_btn").on("click", "#octoklipscreen_save_stats_btn", function(e) {
-            e.preventDefault();
-            var materials = [];
-            $("#octoklipscreen_materials_table_body tr").each(function() {
-                var r = $(this);
-                materials.push({
-                    name: r.find(".m_name").val(),
-                    n_min: parseFloat(r.find(".m_nmin").val()) || 0,
-                    n_max: parseFloat(r.find(".m_nmax").val()) || 0,
-                    b_min: parseFloat(r.find(".m_bmin").val()) || 0,
-                    b_max: parseFloat(r.find(".m_bmax").val()) || 0
-                });
-            });
-
-            var payload = {
-                enabled: $("#octoklipscreen_stat_enabled").is(":checked"),
-                currency: $("#octoklipscreen_stat_currency").val() || "Ft",
-                cost_kwh: parseFloat($("#octoklipscreen_stat_cost").val()) || 0,
-                power_w: parseFloat($("#octoklipscreen_stat_power").val()) || 0,
-                materials: materials
-            };
-
-            $.ajax({
-                url: apiBase + "/save",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(payload),
-                success: function() {
-                    new PNotify({title: "Sikeres mentés", text: "Statisztika és anyagok elmentve!", type: "success"});
-                },
-                error: function() {
-                    new PNotify({title: "Hiba", text: "Nem sikerült menteni a beállításokat!", type: "error"});
-                }
-            });
-        });
-
-        $(document).off("click", "#octoklipscreen_reload_stats_btn").on("click", "#octoklipscreen_reload_stats_btn", function(e) {
-            e.preventDefault();
-            loadStatsSettings(true);
-        });
-
-        $(document).off("click", "#octoklipscreen_reset_stats_btn").on("click", "#octoklipscreen_reset_stats_btn", function(e) {
-            e.preventDefault();
-            if(confirm("Biztosan törölni akarod az eddigi statisztikákat?")) {
-                $.ajax({
-                    url: apiBase + "/reset",
-                    type: "POST",
-                    success: function() {
-                        new PNotify({title: "Törölve", text: "Statisztikai (CSV) adatok kiürítve!", type: "success"});
-                    },
-                    error: function() {
-                        new PNotify({title: "Hiba", text: "Nem sikerült törölni az adatokat!", type: "error"});
-                    }
-                });
-            }
-        });
-
-        $(document).on('shown', 'a[data-toggle="tab"]', function (e) {
-            if ($(e.target).attr('href') === '#settings_octoklipscreen_bridge_stats') {
-                loadStatsSettings(false);
-            }
-        });
-
-        setTimeout(function() { loadStatsSettings(false); }, 1000);
-    });
-</script>
