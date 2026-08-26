@@ -117,10 +117,11 @@
                         <!-- Rows generated via JS -->
                     </tbody>
                 </table>
-                <button type="button" class="btn btn-info" id="octoklipscreen_add_material_btn">+ Add New Material</button>
+                <button type="button" class="btn" id="octoklipscreen_add_material_btn">+ Add New Material</button>
                 
                 <div style="margin-top: 20px;">
                     <button type="button" class="btn btn-primary" id="octoklipscreen_save_stats_btn">Save Statistics Settings</button>
+                    <button type="button" class="btn btn-info" id="octoklipscreen_reload_stats_btn">Reload Settings</button>
                     <button type="button" class="btn btn-danger" id="octoklipscreen_reset_stats_btn" style="float: right;">Reset All Statistics</button>
                 </div>
             </form>
@@ -180,73 +181,92 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
 
 <script type="text/javascript">
     $(function() {
-        function addMatRow(name="", nmin="", nmax="", bmin="", bmax="") {
-            let tbody = $("#octoklipscreen_materials_table_body");
-            let tr = $("<tr></tr>");
+        // API végpont biztonságos összerakása
+        var apiBase = (typeof BASEURL !== "undefined" ? BASEURL : "/") + "api/plugin/octoklipscreen_bridge/stats";
+
+        // Sor hozzáadása a táblázathoz
+        function addMatRow(name, nmin, nmax, bmin, bmax) {
+            name = name || "";
+            nmin = nmin !== undefined ? nmin : 180;
+            nmax = nmax !== undefined ? nmax : 220;
+            bmin = bmin !== undefined ? bmin : 40;
+            bmax = bmax !== undefined ? bmax : 60;
+
+            var tbody = $("#octoklipscreen_materials_table_body");
+            var tr = $("<tr></tr>");
             
             tr.append($("<td>").append($("<input>", { type: "text", class: "m_name input-small", value: name })));
             tr.append($("<td>").append($("<input>", { type: "number", class: "m_nmin input-mini", value: nmin })));
             tr.append($("<td>").append($("<input>", { type: "number", class: "m_nmax input-mini", value: nmax })));
             tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmin input-mini", value: bmin })));
             tr.append($("<td>").append($("<input>", { type: "number", class: "m_bmax input-mini", value: bmax })));
-            tr.append($("<td>").append($("<button>", { 
-                type: "button", 
-                class: "btn btn-danger btn-mini", 
-                text: "X",
-                click: function() { $(this).closest("tr").remove(); } 
-            })));
+            
+            // Dinamikus törlés gomb (a sorhoz kötve)
+            var delBtn = $("<button>", { type: "button", class: "btn btn-danger btn-mini", text: "X" });
+            delBtn.on("click", function() { $(this).closest("tr").remove(); });
+            tr.append($("<td>").append(delBtn));
             
             tbody.append(tr);
         }
 
+        // Táblázat feltöltése JSON adatokból
         function populateTable(materials) {
-            let tbody = $("#octoklipscreen_materials_table_body");
+            var tbody = $("#octoklipscreen_materials_table_body");
             tbody.empty();
             if (materials && materials.length > 0) {
-                materials.forEach(m => {
+                $.each(materials, function(index, m) {
                     addMatRow(m.name, m.n_min, m.n_max, m.b_min, m.b_max);
                 });
-            } else {
-                addMatRow("PLA", 180, 220, 40, 65);
-                addMatRow("PETG", 225, 250, 65, 85);
             }
         }
 
-        function loadStatsSettings() {
+        // JSON adatok lekérése a Python API-ról
+        function loadStatsSettings(showNotification) {
             $.ajax({
-                url: BASEURL + "api/plugin/octoklipscreen_bridge/stats/data",
+                url: apiBase + "/data",
                 type: "GET",
+                dataType: "json",
                 success: function(data) {
-                    let cfg = (data && data.config) ? data.config : null;
-                    if (cfg) {
+                    var cfg = (data && data.config !== undefined) ? data.config : data;
+                    
+                    if (cfg && cfg.materials) {
                         $("#octoklipscreen_stat_enabled").prop("checked", cfg.enabled);
                         $("#octoklipscreen_stat_currency").val(cfg.currency || "Ft");
                         $("#octoklipscreen_stat_cost").val(cfg.cost_kwh || 5.0);
                         $("#octoklipscreen_stat_power").val(cfg.power_w || 250.0);
                         populateTable(cfg.materials);
+                        
+                        if (showNotification) {
+                            new PNotify({title: "Frissítve", text: "Adatok sikeresen újratöltve!", type: "info"});
+                        }
                     } else {
+                        console.warn("A JSON-ben nincs érvényes materials kulcs, üres táblázat jön létre.");
                         populateTable([]);
                     }
                 },
-                error: function() {
-                    populateTable([]);
+                error: function(xhr, status, error) {
+                    console.error("Nem sikerült lekérni a statisztikai JSON-t az API-tól:", error);
+                    if (showNotification) {
+                        new PNotify({title: "Hiba", text: "Nem sikerült lekérni az adatokat!", type: "error"});
+                    }
                 }
             });
         }
 
-        // Bootstrap 2 / Bootstrap 3+ kompatibilis fül váltás esemény
-        $("a[href='#settings_octoklipscreen_bridge_stats']").on('shown shown.bs.tab', function() {
-            loadStatsSettings();
+        // --- ESEMÉNY DELEGÁLÁSOK ---
+
+        // + Add New Material Gomb
+        $(document).off("click", "#octoklipscreen_add_material_btn").on("click", "#octoklipscreen_add_material_btn", function(e) {
+            e.preventDefault();
+            addMatRow("Új anyag", 180, 220, 40, 60);
         });
 
-        $("#octoklipscreen_add_material_btn").off("click").on("click", function() {
-            addMatRow();
-        });
-
-        $("#octoklipscreen_save_stats_btn").click(function() {
-            let materials = [];
+        // Mentés Gomb
+        $(document).off("click", "#octoklipscreen_save_stats_btn").on("click", "#octoklipscreen_save_stats_btn", function(e) {
+            e.preventDefault();
+            var materials = [];
             $("#octoklipscreen_materials_table_body tr").each(function() {
-                let r = $(this);
+                var r = $(this);
                 materials.push({
                     name: r.find(".m_name").val(),
                     n_min: parseFloat(r.find(".m_nmin").val()) || 0,
@@ -256,7 +276,7 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
                 });
             });
 
-            let payload = {
+            var payload = {
                 enabled: $("#octoklipscreen_stat_enabled").is(":checked"),
                 currency: $("#octoklipscreen_stat_currency").val() || "Ft",
                 cost_kwh: parseFloat($("#octoklipscreen_stat_cost").val()) || 0,
@@ -265,35 +285,50 @@ fetch('/api/plugin/octoklipscreen_bridge/stats/data', {
             };
 
             $.ajax({
-                url: BASEURL + "api/plugin/octoklipscreen_bridge/stats/save",
+                url: apiBase + "/save",
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(payload),
                 success: function() {
-                    new PNotify({title: "Success", text: "Statistics settings saved successfully!", type: "success"});
+                    new PNotify({title: "Sikeres mentés", text: "Statisztika és anyagok elmentve a JSON-be!", type: "success"});
                 },
                 error: function() {
-                    new PNotify({title: "Error", text: "Failed to save settings!", type: "error"});
+                    new PNotify({title: "Hiba", text: "Nem sikerült menteni a beállításokat!", type: "error"});
                 }
             });
         });
+        
+        // Frissítés (Reload) Gomb
+        $(document).off("click", "#octoklipscreen_reload_stats_btn").on("click", "#octoklipscreen_reload_stats_btn", function(e) {
+            e.preventDefault();
+            loadStatsSettings(true); // true = mutassa a PNotify értesítést
+        });
 
-        $("#octoklipscreen_reset_stats_btn").click(function() {
-            if(confirm("Are you sure you want to delete all statistical data?")) {
+        // Törlés Gomb
+        $(document).off("click", "#octoklipscreen_reset_stats_btn").on("click", "#octoklipscreen_reset_stats_btn", function(e) {
+            e.preventDefault();
+            if(confirm("Biztosan törölni akarod az eddigi statisztikákat? A CSV fájl tartalma is törlődik!")) {
                 $.ajax({
-                    url: BASEURL + "api/plugin/octoklipscreen_bridge/stats/reset",
+                    url: apiBase + "/reset",
                     type: "POST",
                     success: function() {
-                        new PNotify({title: "Success", text: "Statistical data cleared!", type: "success"});
-                        loadStatsSettings();
+                        new PNotify({title: "Törölve", text: "Statisztikai (CSV) adatok kiürítve!", type: "success"});
                     },
                     error: function() {
-                        new PNotify({title: "Error", text: "Failed to clear data!", type: "error"});
+                        new PNotify({title: "Hiba", text: "Nem sikerült törölni az adatokat!", type: "error"});
                     }
                 });
             }
         });
 
-        loadStatsSettings();
+        // Adatok beolvasása, ha a fülre kattintunk a beállításokban
+        $(document).on('shown', 'a[data-toggle="tab"]', function (e) {
+            if ($(e.target).attr('href') === '#settings_octoklipscreen_bridge_stats') {
+                loadStatsSettings(false);
+            }
+        });
+
+        // Extraként megpróbáljuk betölteni kis késleltetéssel az oldal nyitásakor
+        setTimeout(function() { loadStatsSettings(false); }, 1000);
     });
 </script>
