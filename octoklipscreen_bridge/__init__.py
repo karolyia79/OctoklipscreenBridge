@@ -105,29 +105,32 @@ class OctoklipscreenBridgePlugin(
     self._status_timer.start()
 
   def on_settings_load(self):
-      data = octoprint.plugin.SettingsPlugin.on_settings_load(self)
-      cfg = self._load_config()
-
-      # Az OctoPrint közvetlenül a plugin szótárát adja át (nincs plugins.octoklipscreen_bridge csomagolás!)
-      data["stat_enabled"] = cfg.get("enabled", True)
-      data["stat_currency"] = cfg.get("currency", "Ft")
-      data["stat_cost_kwh"] = cfg.get("cost_kwh", 5.0)
-      data["stat_power_w"] = cfg.get("power_w", 250.0)
-      data["materials"] = cfg.get("materials", [])
-
-      return data
+        data = super().on_settings_load()
+        try:
+            cfg = self._load_config()
+            data["stat_enabled"] = cfg.get("enabled", True)
+            data["stat_currency"] = cfg.get("currency", "Ft")
+            data["stat_cost_kwh"] = cfg.get("cost_kwh", 5.0)
+            data["stat_power_w"] = cfg.get("power_w", 250.0)
+            data["materials"] = cfg.get("materials", [])
+        except Exception as e:
+            logger.error(f"[STAT] Hiba az on_settings_load során: {e}")
+        return data
 
     def on_settings_save(self, data):
-      # A mentéskor kapott adatokat közvetlenül kiírjuk a saját JSON fájlba
-      cfg = {
-          "enabled": data.get("stat_enabled", True),
-          "currency": data.get("stat_currency", "Ft"),
-          "cost_kwh": float(data.get("stat_cost_kwh", 5.0)),
-          "power_w": float(data.get("stat_power_w", 250.0)),
-          "materials": data.get("materials", []),
-      }
-      self._save_config(cfg)
-      octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        try:
+            cfg = {
+                "enabled": data.get("stat_enabled", True),
+                "currency": data.get("stat_currency", "Ft"),
+                "cost_kwh": float(data.get("stat_cost_kwh", 5.0)),
+                "power_w": float(data.get("stat_power_w", 250.0)),
+                "materials": data.get("materials", []),
+            }
+            self._save_config(cfg)
+        except Exception as e:
+            logger.error(f"[STAT] Hiba az on_settings_save során: {e}")
+
+        super().on_settings_save(data)
     
   def on_shutdown(self):
     """Called when OctoPrint is shutting down"""
