@@ -54,16 +54,19 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
    
     # --- Settings Defaults ---
     def get_settings_defaults(self):
-        """Return default settings"""
-        return {
-            "mqtt_host": "localhost",
-            "mqtt_port": 1883,
-            "mqtt_username": "",
-            "mqtt_password": "",
-            "mqtt_topic": "octoprint/serial",
-            "mqtt_enabled": True,
-            "log_serial": True
-        }
+      return dict(
+          mqtt_host="localhost",
+          mqtt_port=1883,
+          mqtt_topic="octoprint/serial",
+          stat_enabled=True,
+          stat_currency="Ft",
+          stat_cost_kwh=5.0,
+          stat_power_w=250.0,
+          materials=[
+              dict(name="PLA", n_min=180, n_max=220, b_min=40, b_max=65),
+              dict(name="PETG", n_min=225, n_max=250, b_min=65, b_max=85)
+          ]
+      )
 
     def get_template_configs(self):
         """Return template configurations"""
@@ -560,11 +563,11 @@ class OctoklipscreenBridgePlugin(octoprint.plugin.StartupPlugin,
         return dict(
             octoklipscreen_bridge=dict(
                 displayName="Octoklipscreen Bridge",
-                displayVersion="0.7.8",
+                displayVersion="0.7.9",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.7.8",
+                current="0.7.9",
                 stable_branch=dict(name="Main", branch="main", comittish=["main"]),
                 prerelease_branches=[],
                 pip="https://github.com/karolyia79/OctoklipscreenBridge/archive/refs/heads/main.zip"
