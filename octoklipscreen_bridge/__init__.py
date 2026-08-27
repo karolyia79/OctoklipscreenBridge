@@ -2,14 +2,13 @@
 """OctoklipscreenBridge - OctoPrint plugin
 
 Sends serial logs, status, printer state/temps, profiles and job data via MQTT
-to CYD display. Includes server-side statistics and REST API management with
-unique file names.
+to CYD display. Includes server-side statistics and REST API management using
+OctoPrint's central settings.
 """
 
 import json
 import logging
 import os
-import threading
 import time
 
 import flask
@@ -32,7 +31,7 @@ class OctoklipscreenBridgePlugin(
 ):
     """OctoPrint plugin for bridging serial logs, printer info to MQTT, and
 
-    managing server-side print statistics with dedicated storage.
+    managing server-side print statistics using central OctoPrint settings.
     """
 
     def initialize(self):
@@ -43,7 +42,7 @@ class OctoklipscreenBridgePlugin(
         self._mqtt_connected = False
         self._status_timer = None
 
-        # Get OctoPrint base folder for data storage
+        # Get OctoPrint base folder for CSV storage
         self._base_folder = self.get_plugin_data_folder()
         os.makedirs(self._base_folder, exist_ok=True)
 
@@ -52,10 +51,10 @@ class OctoklipscreenBridgePlugin(
         self._current_material = "EGYÉB"
         self._active_system = "OctoPrint"
 
-        # Initialize config and CSV with unique names if not present
-        self._init_stats_storage()
+        # Initialize CSV log file if not present
+        self._init_csv_storage()
 
-    # --- Settings Defaults ---
+    # --- Központi Settings Alapértelmezések ---
     def get_settings_defaults(self):
         return dict(
             mqtt_enabled=True,
@@ -71,45 +70,14 @@ class OctoklipscreenBridgePlugin(
             materials=[
                 dict(name="PLA", n_min=180, n_max=220, b_min=40, b_max=65),
                 dict(name="PETG", n_min=225, n_max=250, b_min=65, b_max=85),
+                dict(name="ABS", n_min=240, n_max=280, b_min=90, b_max=115),
+                dict(name="TPU", n_min=200, n_max=230, b_min=20, b_max=50),
             ],
         )
 
     def get_template_configs(self):
         """Return template configurations"""
         return [dict(type="settings", name="Octoklipscreen Bridge")]
-
-    # --- Settings Lifecycle Hooks ---
-    def on_settings_load(self):
-        data = super().on_settings_load()
-        try:
-            cfg = self._load_config()
-            data["stat_enabled"] = cfg.get("enabled", True)
-            data["stat_currency"] = cfg.get("currency", "Ft")
-            data["stat_cost_kwh"] = cfg.get("cost_kwh", 5.0)
-            data["stat_power_w"] = cfg.get("power_w", 250.0)
-            data["materials"] = cfg.get("materials", [])
-        except Exception as e:
-            logger.error(f"[STAT] Hiba az on_settings_load során: {e}")
-        return data
-
-    def on_settings_save(self, data):
-        # 1. Előbb frissítjük az OctoPrint saját settings tárát
-        saved_data = super().on_settings_save(data)
-        try:
-            # 2. A frissült adatok biztonságos kinyerése és elmentése a saját opiklipscreenstat.json-be
-            cfg = {
-                "enabled": self._settings.get_boolean(["stat_enabled"]),
-                "currency": self._settings.get(["stat_currency"]),
-                "cost_kwh": self._settings.get_float(["stat_cost_kwh"]),
-                "power_w": self._settings.get_float(["stat_power_w"]),
-                "materials": self._settings.get(["materials"]),
-            }
-            self._save_config(cfg)
-        except Exception as e:
-            logger.error(f"[STAT] Hiba az on_settings_save során: {e}")
-
-        # 3. KÖTELEZŐ visszaadni a szótárat az OctoPrint felé!
-        return saved_data
 
     # --- Gcode Hooks ---
     def process_gcode_sent(
@@ -386,62 +354,10 @@ class OctoklipscreenBridgePlugin(
     # --- SZERVER OLDALI STATISZTIKA MODUL ---
     # =========================================================
 
-    def _get_json_path(self):
-        return os.path.join(self._base_folder, "opiklipscreenstat.json")
-
     def _get_csv_path(self):
         return os.path.join(self._base_folder, "opiklipscreenstat.csv")
 
-    def _init_stats_storage(self):
-        try:
-            os.makedirs(self._base_folder, exist_ok=True)
-        except Exception as e:
-            logger.error(f"[STAT] Hiba a data mappa létrehozásakor: {e}")
-
-        json_path = self._get_json_path()
-        if not os.path.exists(json_path):
-            default_config = {
-                "enabled": True,
-                "cost_kwh": 5.0,
-                "power_w": 250.0,
-                "currency": "Ft",
-                "materials": [
-                    {
-                        "name": "PLA",
-                        "n_min": 180,
-                        "n_max": 220,
-                        "b_min": 40,
-                        "b_max": 65,
-                    },
-                    {
-                        "name": "PETG",
-                        "n_min": 225,
-                        "n_max": 250,
-                        "b_min": 65,
-                        "b_max": 85,
-                    },
-                    {
-                        "name": "ABS",
-                        "n_min": 240,
-                        "n_max": 280,
-                        "b_min": 90,
-                        "b_max": 115,
-                    },
-                    {
-                        "name": "TPU",
-                        "n_min": 200,
-                        "n_max": 230,
-                        "b_min": 20,
-                        "b_max": 50,
-                    },
-                ],
-            }
-            try:
-                with open(json_path, "w", encoding="utf-8") as f:
-                    json.dump(default_config, f, indent=4)
-            except Exception as e:
-                logger.error(f"Error creating default opiklipscreenstat.json: {e}")
-
+    def _init_csv_storage(self):
         csv_path = self._get_csv_path()
         if not os.path.exists(csv_path):
             try:
@@ -450,82 +366,20 @@ class OctoklipscreenBridgePlugin(
             except Exception as e:
                 logger.error(f"Error creating default opiklipscreenstat.csv: {e}")
 
-    def _load_config(self):
-        json_path = self._get_json_path()
-        default_config = {
-            "enabled": True,
-            "cost_kwh": 5.0,
-            "power_w": 250.0,
-            "currency": "Ft",
-            "materials": [
-                {
-                    "name": "PLA",
-                    "n_min": 180,
-                    "n_max": 220,
-                    "b_min": 40,
-                    "b_max": 65,
-                },
-                {
-                    "name": "PETG",
-                    "n_min": 225,
-                    "n_max": 250,
-                    "b_min": 65,
-                    "b_max": 85,
-                },
-                {
-                    "name": "ABS",
-                    "n_min": 240,
-                    "n_max": 280,
-                    "b_min": 90,
-                    "b_max": 115,
-                },
-                {
-                    "name": "TPU",
-                    "n_min": 200,
-                    "n_max": 230,
-                    "b_min": 20,
-                    "b_max": 50,
-                },
-            ],
-        }
-
-        if os.path.exists(json_path):
-            try:
-                with open(json_path, "r", encoding="utf-8") as f:
-                    content = f.read().strip()
-                    if not content:
-                        return default_config
-                    cfg = json.loads(content)
-                    if "materials" not in cfg or not cfg["materials"]:
-                        cfg["materials"] = default_config["materials"]
-                    return cfg
-            except Exception as e:
-                logger.error(f"Error loading opiklipscreenstat.json: {e}")
-
-        return default_config
-
-    def _save_config(self, cfg):
-        json_path = self._get_json_path()
-        try:
-            with open(json_path, "w", encoding="utf-8") as f:
-                json.dump(cfg, f, indent=4)
-            return True
-        except Exception as e:
-            logger.error(f"Error saving opiklipscreenstat.json: {e}")
-            return False
-
     def _determine_material(self, nozzle_target, bed_target):
-        cfg = self._load_config()
-        for rule in cfg.get("materials", []):
-            if rule.get("n_min", 0) <= nozzle_target <= rule.get(
-                "n_max", 0
-            ) and rule.get("b_min", 0) <= bed_target <= rule.get("b_max", 0):
+        materials = self._settings.get(["materials"]) or []
+        for rule in materials:
+            n_min = float(rule.get("n_min", 0))
+            n_max = float(rule.get("n_max", 0))
+            b_min = float(rule.get("b_min", 0))
+            b_max = float(rule.get("b_max", 0))
+
+            if n_min <= nozzle_target <= n_max and b_min <= bed_target <= b_max:
                 return rule.get("name", "EGYÉB")
         return "EGYÉB"
 
     def _handle_print_started(self, payload):
-        cfg = self._load_config()
-        if not cfg.get("enabled", True):
+        if not self._settings.get_boolean(["stat_enabled"]):
             return
 
         self._print_start_time = time.time()
@@ -547,8 +401,7 @@ class OctoklipscreenBridgePlugin(
         logger.info(f"[STAT] Nyomtatás elindult - Anyag: {self._current_material}")
 
     def _handle_print_finished(self, success):
-        cfg = self._load_config()
-        if not cfg.get("enabled", True) or self._print_start_time == 0:
+        if not self._settings.get_boolean(["stat_enabled"]) or self._print_start_time == 0:
             return
 
         duration_seconds = int(time.time() - self._print_start_time)
@@ -558,8 +411,8 @@ class OctoklipscreenBridgePlugin(
             logger.info("[STAT] Túl rövid nyomtatási idő (<5s), mentés kihagyva.")
             return
 
-        power_w = cfg.get("power_w", 250.0)
-        cost_kwh = cfg.get("cost_kwh", 5.0)
+        power_w = self._settings.get_float(["stat_power_w"])
+        cost_kwh = self._settings.get_float(["stat_cost_kwh"])
         energy_kwh = (power_w / 1000.0) * (duration_seconds / 3600.0)
         current_cost = energy_kwh * cost_kwh
 
@@ -577,7 +430,6 @@ class OctoklipscreenBridgePlugin(
             logger.error(f"[STAT] Hiba a CSV mentésekor: {e}")
 
     def _aggregate_stats(self):
-        cfg = self._load_config()
         stats = {
             "totalTimeOcto": 0,
             "totalTimeKlipper": 0,
@@ -628,6 +480,15 @@ class OctoklipscreenBridgePlugin(
             except Exception as e:
                 logger.error(f"[STAT] Hiba a CSV olvasásakor: {e}")
 
+        # Config kinyerése közvetlenül az OctoPrint központi tárából
+        cfg = {
+            "enabled": self._settings.get_boolean(["stat_enabled"]),
+            "currency": self._settings.get(["stat_currency"]),
+            "cost_kwh": self._settings.get_float(["stat_cost_kwh"]),
+            "power_w": self._settings.get_float(["stat_power_w"]),
+            "materials": self._settings.get(["materials"]),
+        }
+
         return {
             "config": cfg,
             "stats": stats,
@@ -660,7 +521,18 @@ class OctoklipscreenBridgePlugin(
         try:
             req_data = flask.request.get_json()
             if req_data:
-                self._save_config(req_data)
+                if "enabled" in req_data:
+                    self._settings.set_boolean(["stat_enabled"], req_data["enabled"])
+                if "currency" in req_data:
+                    self._settings.set(["stat_currency"], str(req_data["currency"]))
+                if "cost_kwh" in req_data:
+                    self._settings.set_float(["stat_cost_kwh"], req_data["cost_kwh"])
+                if "power_w" in req_data:
+                    self._settings.set_float(["stat_power_w"], req_data["power_w"])
+                if "materials" in req_data:
+                    self._settings.set(["materials"], req_data["materials"])
+
+                self._settings.save()
                 return flask.jsonify({"success": True})
         except Exception as e:
             logger.error(f"[STAT] Hiba a beállítások mentésekor: {e}")
@@ -682,11 +554,11 @@ class OctoklipscreenBridgePlugin(
         return dict(
             octoklipscreen_bridge=dict(
                 displayName="Octoklipscreen Bridge",
-                displayVersion="0.8.8",
+                displayVersion="0.8.7",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.8.8",
+                current="0.8.7",
                 stable_branch=dict(
                     name="Main", branch="main", commitish=["main"]
                 ),
