@@ -554,11 +554,11 @@ class OctoklipscreenBridgePlugin(
         return dict(
             octoklipscreen_bridge=dict(
                 displayName="Octoklipscreen Bridge",
-                displayVersion="0.8.7",
+                displayVersion="0.8.8",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.8.7",
+                current="0.8.8",
                 stable_branch=dict(
                     name="Main", branch="main", commitish=["main"]
                 ),
