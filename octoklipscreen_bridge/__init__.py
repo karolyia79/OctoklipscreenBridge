@@ -675,18 +675,18 @@ class OctoklipscreenBridgePlugin(
             return flask.jsonify({"success": True})
         except Exception as e:
             logger.error(f"[STAT] Hiba a statisztika törlésekor: {e}")
-            return flask.jsonify({"success": False}), 400
+        return flask.jsonify({"success": False}), 400
 
     # --- Plugin Info ---
     def get_update_information(self):
         return dict(
             octoklipscreen_bridge=dict(
                 displayName="Octoklipscreen Bridge",
-                displayVersion="0.8.7",
+                displayVersion="0.8.8",
                 type="github_release",
                 user="karolyia79",
                 repo="OctoklipscreenBridge",
-                current="0.8.7",
+                current="0.8.8",
                 stable_branch=dict(
                     name="Main", branch="main", commitish=["main"]
                 ),
